@@ -58,14 +58,41 @@ bool has_compiled_enough(t_simulation simulation)
 	return (simulation.number_of_compiles >= simulation.number_of_compiles_required);
 }
 
-try_to_take_dongles(t_simulation simulation, t_coder *coder)
+int	try_to_take_dongles(t_simulation simulation, t_coder *coder)
 {
-	// Attempt to take the left and right dongle, waiting if necessary until they are available
+	if (coder->left->available && coder->left->available)
+	{
+		dongle_cycle(&simulation, &coder->left);
+		dongle_cycle(&simulation, &coder->right);
+		return (0);
+	}
+	return (1);
+}
+
+/**
+ * @brief 1. Lock the dongle
+ * 2. Wait time to compile
+ * 3. Unlock dongle
+ * 4. Cooldown of the dongle
+ *
+ * @param simulation
+ * @param dongle
+ */
+void	dongle_cycle(t_simulation *simulation, t_dongle *dongle)
+{
+	struct timeval	wait_time;
+
+	dongle->available = false;
+	pthread_mutex_lock(&dongle);
+	usleep(simulation->time_to_compile);
+	pthread_mutex_unlock(&dongle);
+	pthread_cond_timedwait(&dongle, &dongle->mutex, &simulation->dongle_cooldown);
+	dongle->available = true;
 }
 
 compile(t_simulation simulation, t_coder *coder)
 {
-	// Simulate the compile action, update coder's state and release dongles after use
+
 }
 
 debug(t_simulation simulation, t_coder *coder)
