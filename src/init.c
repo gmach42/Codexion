@@ -6,7 +6,7 @@
 /*   By: gmach <gmach@student.42lyon.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/23 13:03:55 by gmach             #+#    #+#             */
-/*   Updated: 2026/02/23 16:14:50 by gmach            ###   ########lyon.fr   */
+/*   Updated: 2026/02/23 17:04:07 by gmach            ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,12 +25,12 @@ t_simulation	simulation_init(char **argv)
 	simulation.time_to_refactor = atoi(argv[5]);
 	simulation.number_of_compiles_required = atoi(argv[6]);
 	simulation.dongle_cooldown = atoi(argv[7]);
-	simulation.start_time = now.tv_sec;
+	simulation.start_time = now.tv_usec;
 
 	return (simulation);
 }
 
-t_coder	coder_init(t_coder *coder, int id, t_dongle *left, t_dongle *right)
+void	coder_init(t_coder *coder, int id, t_dongle *left, t_dongle *right)
 {
 	coder->id = id;
 	coder->left = left;
@@ -39,7 +39,7 @@ t_coder	coder_init(t_coder *coder, int id, t_dongle *left, t_dongle *right)
 	printf("Coder %d initialize, left dongle: %X, right dongle %X\n", id, left, right);
 }
 
-void	*coders_init(t_simulation *sim)
+void	coders_init(t_simulation *sim)
 {
 	t_coder		*coders;
 	t_dongle	*dongles;
@@ -48,7 +48,7 @@ void	*coders_init(t_simulation *sim)
 	i = 0;
 	coders = malloc(sizeof(t_coder) * sim->number_of_coders);
 	if (!coders)
-		return (NULL);
+		return;
 	while (i < sim->number_of_coders)
 	{
 		coder_init(&coders[i], i, &sim->dongles[i], &sim->dongles[(i + 1) % sim->number_of_coders]);
@@ -74,7 +74,7 @@ void	dongle_init(t_dongle *dongle)
 	dongle->schedule = waiting_q;
 }
 
-void	*dongles_init(t_simulation *sim)
+void	dongles_init(t_simulation *sim)
 {
 	t_dongle	*dongles;
 	int			i;
@@ -82,7 +82,7 @@ void	*dongles_init(t_simulation *sim)
 	i = 0;
 	dongles = malloc(sizeof(t_dongle) * sim->number_of_coders);
 	if (!dongles)
-		return (NULL);
+		return;
 	while (i < sim->number_of_coders)
 	{
 		dongle_init(&dongles[i]);

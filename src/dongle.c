@@ -6,7 +6,7 @@
 /*   By: gmach <gmach@student.42lyon.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/23 13:04:03 by gmach             #+#    #+#             */
-/*   Updated: 2026/02/23 16:17:32 by gmach            ###   ########lyon.fr   */
+/*   Updated: 2026/02/23 16:33:08 by gmach            ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,18 +51,18 @@
 void	dongle_take(t_simulation *sim, t_dongle *dongle, t_coder *coder)
 {
 	pthread_mutex_lock(&dongle->mutex);
-	printf("dongle %d mutex locked\n", dongle->mutex);
+	printf("dongle %X mutex locked\n", dongle);
 	while (!dongle->available)
 		pthread_cond_timedwait(&dongle->cond, &dongle->mutex, &dongle->schedule->deadline); // TODO fix deadline stocker ca dans coder directement?
 	dongle->available = false;
-	printf("%ld %d has taken a dongle\n", time_since_start(sim).tv_sec, coder->id);
+	printf("%ld %d has taken a dongle\n", time_since_start(sim), coder->id);
 	pthread_mutex_unlock(&dongle->mutex);
 }
 
 void	dongle_release(t_simulation *sim, t_dongle *dongle)
 {
-	struct timeval	now;
-	struct timespec	timeout;
+	t_timeval	now;
+	t_timespec	timeout;
 
 	gettimeofday(&now, NULL);
 	timeout.tv_sec = now.tv_sec - sim->dongle_cooldown;
@@ -78,4 +78,5 @@ void	dongle_release(t_simulation *sim, t_dongle *dongle)
 	dongle->available = true;
 	pthread_cond_broadcast(&dongle->cond);
 	pthread_mutex_unlock(&dongle->mutex);
+	printf("dongle %X unlocked\n", dongle);
 }

@@ -105,10 +105,10 @@ void	dongle_take(t_simulation *sim, t_dongle *dongle, t_coder *coder);
 void	dongle_release(t_simulation *sim, t_dongle *dongle);
 
 t_simulation	simulation_init(char **argv);
-void	*coders_init(t_simulation *sim);
-void	*dongles_init(t_simulation *sim);
+void	coders_init(t_simulation *sim);
+void	dongles_init(t_simulation *sim);
 
 bool	simulation_stopped(t_simulation *sim);
-t_timeval	time_since_start(t_simulation *sim);
+long	time_since_start(t_simulation *sim);
 
 #endif

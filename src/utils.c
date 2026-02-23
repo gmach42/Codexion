@@ -1,19 +1,18 @@
 #include "codexion.h"
 
-t_timeval	time_since_start(t_simulation *sim)
+long	time_since_start(t_simulation *sim)
 {
 	t_timeval	current_time;
-	t_timeval	time_since_start;
+	long		time_since_start;
 
 	gettimeofday(&current_time, NULL);
-	time_since_start.tv_sec = current_time.tv_sec - sim->start_time;
-	time_since_start.tv_usec = current_time.tv_usec - sim->start_time * 1000;
+	time_since_start = current_time.tv_usec - sim->start_time;
 	return (time_since_start);
 }
 
 bool is_burned(t_simulation *sim)
 {
-	return (time_since_start(sim).tv_sec > sim->time_to_burnout);
+	return (time_since_start(sim) > sim->time_to_burnout);
 }
 
 bool has_compiled_enough(t_simulation *simulation)
@@ -32,12 +31,12 @@ bool	simulation_stopped(t_simulation *sim)
 {
 	if (is_burned(sim))
 	{
-		printf("Coder has burnt %d", sim->start_time);
+		printf("Coder has burnt %d\n", sim->start_time);
 		return true;
 	}
 	if (has_compiled_enough(sim))
 	{
-		printf("Simulation Complete");
+		printf("Simulation Complete\n");
 		return true;
 	}
 	return false;
