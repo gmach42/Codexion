@@ -1,14 +1,14 @@
 #ifndef CODEXION_H
 # define CODEXION_H
 
-# include <unistd.h> // usleep, write
-# include <stdio.h> // printf, fprintf
-# include <pthread.h> // pthread functions
+# include <unistd.h>	  // usleep, write
+# include <stdio.h>	  // printf, fprintf
+# include <pthread.h>  // pthread functions
 # include <sys/time.h> // gettimeofday
-# include <stdlib.h> // malloc, free, atoi
-# include <string.h> // memset
-# include <limits.h> // INT_MAX, INT_MIN
-# include <stdbool.h> // bool, true, false
+# include <stdlib.h>	  // malloc, free, atoi
+# include <string.h>	  // memset
+# include <limits.h>	  // INT_MAX, INT_MIN
+# include <stdbool.h>  // bool, true, false
 
 # define INIT 0;
 # define COMPILE 1;
@@ -18,7 +18,13 @@
 
 // Alias for timeval and timespec
 typedef struct timeval	t_timeval;
-typedef struct timespec t_timespec;
+typedef struct timespec	t_timespec;
+typedef pthread_mutex_t	mutex_t;
+typedef pthread_cond_t	cond_t;
+
+typedef struct s_sim t_sim;
+typedef struct s_coder t_coder;
+typedef struct s_dongle t_dongle;
 
 /**
  *	@file 	scheduler.c
@@ -27,13 +33,13 @@ typedef struct timespec t_timespec;
  * @param coder_id		Coder's ID
  * @param arrival_time	Integer
  * @param deadline		Integer representing the time before burnout
-*/
+ */
 typedef struct s_heapq
 {
-	int			coder_id; /**< Coder ID */
-	t_timeval	arrival_time; /**< Arrival time in ms */
-	t_timespec	deadline; /**< deadline = last_compile_start + time_to_burnout */
-}	t_heapq;
+	int coder_id;			/**< Coder ID */
+	t_timeval arrival_time; /**< Arrival time in ms */
+	t_timespec deadline;	/**< deadline = last_compile_start + time_to_burnout */
+} t_heapq;
 
 /**
  *	@file 	dongle.c
@@ -48,16 +54,16 @@ typedef struct s_heapq
  * @param	available	True if the dongle is available, false if it's being used or in cooldown
  * @param	cooldown	Timestamp in ms of the cooldown
  * @param	schedule	Heapq storing coders for each dongle
-*/
+ */
 typedef struct s_dongle
 {
-	pthread_mutex_t	mutex;	/**< Protects access to dongle state */
-	pthread_cond_t	cond;	/**< Signal waiting coders */
+	mutex_t mutex; /**< Protects access to dongle state */
+	pthread_cond_t cond;   /**< Signal waiting coders */
 
-	bool			available;	/**< Boolean indicating if the dongle is available */
+	bool available; /**< Boolean indicating if the dongle is available */
 
-	t_heapq			*schedule; /**< Heapq of waiting coders */
-}	t_dongle;
+	t_heapq *schedule; /**< Heapq of waiting coders */
+} t_dongle;
 
 /**
  *	@file 	coder.c
@@ -67,48 +73,58 @@ typedef struct s_dongle
  *	@param	thread	Thread associated to the coder
  *	@param	left	Pointer to the left dongle
  *	@param	right	Pointer to the right dongle
-*/
+ */
 typedef struct s_coder
 {
-	int			id;
-	int			state;
-	pthread_t	thread;
+	int id;
+	int state;
 
-	t_dongle	*left;	/**< Pointer to the left dongle */
-	t_dongle	*right;	/**< Pointer to the right dongle */
-}	t_coder;
+	size_t	last_compile_time;
 
-typedef struct s_simulation
+	pthread_t thread;
+	t_sim *sim;
+
+	t_dongle *left;	 /**< Pointer to the left dongle */
+	t_dongle *right; /**< Pointer to the right dongle */
+} t_coder;
+
+typedef struct s_sim
 {
-	t_coder		*coders;
-	t_dongle	*dongles;
+	t_coder 	*coders;
+	t_dongle 	*dongles;
 
-	int			number_of_coders;
-	int			number_of_compiles;
-	int			number_of_compiles_required;
+	pthread_t	monitor;
+	mutex_t		stop_mutex;
+	mutex_t		print_mutex;
+	bool		stop;
 
-	int			time_to_burnout;
-	int			time_to_debug;
-	int			time_to_compile;
-	int			time_to_refactor;
-	int			dongle_cooldown;
-	int			start_time;
+	int 		number_of_coders;
+	int 		number_of_compiles;
+	int 		number_of_compiles_required;
 
-}	t_simulation;
+	size_t		time_to_burnout;
+	size_t		time_to_debug;
+	size_t		time_to_compile;
+	size_t		time_to_refactor;
+	size_t		dongle_cooldown;
+	size_t		start_time;
 
-void	compile(t_simulation *sim, t_coder *coder);
-void	debug(t_simulation *sim, t_coder *coder);
-void	refactor(t_simulation *sim, t_coder *coder);
-void	routine(t_simulation *sim, t_coder *coder);
+} t_sim;
 
-void	dongle_take(t_simulation *sim, t_dongle *dongle, t_coder *coder);
-void	dongle_release(t_simulation *sim, t_dongle *dongle);
+void compile(t_sim *sim, t_coder *coder);
+void debug(t_sim *sim, t_coder *coder);
+void refactor(t_sim *sim, t_coder *coder);
+void *routine(void *arg);
 
-t_simulation	simulation_init(char **argv);
-void	coders_init(t_simulation *sim);
-void	dongles_init(t_simulation *sim);
+void dongle_take(t_sim *sim, t_dongle *dongle, t_coder *coder);
+void dongle_release(t_sim *sim, t_dongle *dongle);
 
-bool	simulation_stopped(t_simulation *sim);
-long	time_since_start(t_simulation *sim);
+t_sim simulation_init(char **argv);
+void coders_init(t_sim *sim);
+void dongles_init(t_sim *sim);
+
+bool simulation_stopped(t_sim *sim);
+size_t time_since_start(t_sim *sim);
+size_t get_current_time(void);
 
 #endif

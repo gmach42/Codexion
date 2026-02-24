@@ -11,7 +11,9 @@ CC := cc
 
 CFLAGS := -Wall -Werror -Wextra
 
-FLAGS := -pthread -I. -g
+FLAGS := -pthread -I.
+
+DEBUG_FLAGS := -g -fsanitize=thread
 
 DEPFLAGS := -MMD -MP
 
@@ -21,7 +23,6 @@ SRCS := $(addprefix $(SRC_DIR)/, \
 	dongle.c\
 	monitor.c\
 	parser.c\
-	schedule.c\
 	utils.c\
 	init.c\
 	)
@@ -41,10 +42,13 @@ $(BUILD_DIR):
 	mkdir -p $@
 
 t: re
-	./$(NAME) 2 5000 1 1 1 2 1 fifo
+	$(CC) $(FLAGS) $(OBJS) -o $(NAME)
+	./$(NAME) 4 2000 5 1.5 1 2 1 fifo
 
-debug: re
-	gdb --args $(NAME) 2 5000 1 1 1 2 1 fifo
+debug:
+	$(CC) $(FLAGS) $(DEBUG_FLAGS) $(OBJS) -o $(NAME)
+	./$(NAME) 4 2000 5 1.5 1 2 1 fifo
+# 	gdb --args $(NAME) 4 5000 1 1 1 2 1 fifo
 
 clean:
 	$(RM) $(OBJS) $(DEPS)

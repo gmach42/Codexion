@@ -1,28 +1,68 @@
 #include "codexion.h"
 
-void	print_sim_state(t_simulation *sim)
+// void print_sim_state(t_sim *sim)
+// {
+// 	printf("\nSIM STATE\n");
+// 	printf("coders: %X\n", sim->coders);
+// 	printf("dongles: %X\n", sim->dongles);
+// 	printf("number of coders: %d\n", sim->number_of_coders);
+// 	printf("compiles done: %d\n", sim->number_of_compiles);
+// 	printf("compiles to do: %d\n", sim->number_of_compiles_required);
+// 	printf("time to burnout: %.1f s\n", (float)sim->time_to_burnout / 1000000);
+// 	printf("time to debug: %.1f s\n", (float)sim->time_to_debug / 1000000);
+// 	printf("time to compile: %.1f s\n", (float)sim->time_to_compile / 1000000);
+// 	printf("time to refactor: %.1f s\n", (float)sim->time_to_refactor / 1000000);
+// 	printf("dongle cooldown: %.1f s\n", (float)sim->dongle_cooldown / 1000000);
+// 	printf("start time: %d\n\n", sim->start_time);
+// }
+
+// int sim_stopped(t_sim *sim)
+// {
+//     int stopped;
+
+//     pthread_mutex_lock(&sim->stop_mutex);
+//     stopped = sim->stop;
+//     pthread_mutex_unlock(&sim->stop_mutex);
+//     return (stopped);
+// }
+
+void stop_simulation(t_sim *sim)
 {
-	printf("\nSIM STATE\n");
-	printf("coders: %X\n", sim->coders);
-	printf("dongles: %X\n", sim->dongles);
-	printf("number of coders: %d\n", sim->number_of_coders);
-	printf("compiles done: %d\n", sim->number_of_compiles);
-	printf("compiles to do: %d\n", sim->number_of_compiles_required);
-	printf("time to burnout: %d\n", sim->time_to_burnout);
-	printf("time to debug: %d\n", sim->time_to_debug);
-	printf("time to compile: %d\n", sim->time_to_compile);
-	printf("time to refactor: %d\n", sim->time_to_refactor);
-	printf("dongle cooldown: %d\n", sim->dongle_cooldown);
-	printf("start time: %d\n", sim->start_time);
+    pthread_mutex_lock(&sim->stop_mutex);
+    sim->stop = true;
+    pthread_mutex_unlock(&sim->stop_mutex);
+}
+
+void *monitor_routine(void *arg)
+{
+    t_sim *sim = (t_sim *)arg;
+    int i;
+
+    while (!simulation_stopped(sim))
+    {
+        i = 0;
+        while (i < sim->number_of_coders)
+        {
+            if (get_current_time() - sim->coders[i].last_compile_time > sim->time_to_burnout)
+            {
+                printf("%d has burned out\n", sim->coders[i].id);
+                stop_simulation(sim);
+                return (NULL);
+            }
+            i++;
+        }
+        usleep(1000);
+    }
+    return (NULL);
 }
 
 int main(int argc, char **argv)
 {
-	t_simulation	sim;
-	t_coder			*coders;
-	t_dongle		*dongles;
-	pthread_t		monitor_thread;
-	int				i;
+	t_sim sim;
+	t_coder *coders;
+	t_dongle *dongles;
+	pthread_t monitor_thread;
+	int i;
 
 	if (argc != 9)
 	{
@@ -31,33 +71,21 @@ int main(int argc, char **argv)
 		return (0);
 	}
 
-	printf("\n	INIT:\n\n");
-
 	sim = simulation_init(argv);
-	printf("Simulation init!\n");
-	dongles_init(&sim);
-	printf("Dongles init!\n");
-	coders_init(&sim);
-	printf("Coders init!\n");
-	// monitor_thread = monitor_init(sim);
-
-	print_sim_state(&sim);
+	pthread_create(&monitor_thread, NULL, monitor_routine, &sim);
 
 	printf("\n	START:\n\n");
-	while (!simulation_stopped(&sim))
-		{
-			i = 0;
-			while(i < sim.number_of_coders)
-				{
-					printf("trying routine coder %d\n", i);
-					routine(&sim, &sim.coders[i++]);
-					print_sim_state(&sim);
-				}
-		}
+	i = 0;
+	while (i < sim.number_of_coders)
+	{
+		pthread_create(&sim.coders[i].thread, NULL, routine, &sim.coders[i]);
+		i++;
+	}
+	i = 0;
+	while (i < sim.number_of_coders)
+		pthread_join(sim.coders[i++].thread, NULL);
+	pthread_join(monitor_thread, NULL);
+	// destroy(simulation, coders, dongles, monitor_thread);
 
-	//destroy(simulation, coders, dongles, monitor_thread);
-
-    return 0;
+	return 0;
 }
-
-

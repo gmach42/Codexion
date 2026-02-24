@@ -1,37 +1,46 @@
-# include "codexion.h"
+#include "codexion.h"
 
-void	compile(t_simulation *sim, t_coder *coder)
+void compile(t_sim *sim, t_coder *coder)
 {
 	printf("%ld %d is compiling\n", time_since_start(sim), coder->id);
 	coder->state = COMPILE;
-	usleep(sim->time_to_compile * 1000);
+	usleep(sim->time_to_compile);
 	dongle_release(sim, coder->left);
 	dongle_release(sim, coder->right);
 }
 
-void	debug(t_simulation *sim, t_coder *coder)
+void debug(t_sim *sim, t_coder *coder)
 {
 	printf("%ld %d is debugging\n", time_since_start(sim), coder->id);
 	coder->state = DEBUG;
-	usleep(sim->time_to_compile * 1000);
+	usleep(sim->time_to_compile);
 }
 
-void	refactor(t_simulation *sim, t_coder *coder)
+void refactor(t_sim *sim, t_coder *coder)
 {
 	printf("%ld %d is refactoring\n", time_since_start(sim), coder->id);
 	coder->state = REFACTOR;
-	usleep(sim->time_to_compile * 1000);
+	usleep(sim->time_to_compile);
 }
 
-void	routine(t_simulation *sim, t_coder *coder)
+void *routine(void *arg)
 {
-	printf("start routine\n");
-	dongle_take(sim, coder->left, coder);
-	dongle_take(sim, coder->right, coder);
-	compile(sim, coder);
-	debug(sim, coder);
-	refactor(sim, coder);
-	sim->number_of_compiles++;
-	printf("Compilation num %d complete!\n\n", sim->number_of_compiles);
-}
+	t_coder *coder;
 
+	coder = (t_coder *)arg;
+	printf("test\n");
+
+	while (!coder->sim->stop)
+	{
+		printf("start routine\n");
+		printf("sim %X, dongle %X, coder %X\n", coder->sim, coder->left, coder);
+		dongle_take(coder->sim, coder->left, coder);
+		dongle_take(coder->sim, coder->right, coder);
+		compile(coder->sim, coder);
+		debug(coder->sim, coder);
+		refactor(coder->sim, coder);
+		coder->sim->number_of_compiles++;
+		printf("Compilation num %d complete!\n\n", coder->sim->number_of_compiles);
+	}
+	return (NULL);
+}
