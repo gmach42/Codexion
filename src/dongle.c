@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   dongle.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gildas <gildas@student.42lyon.fr>          +#+  +:+       +#+        */
+/*   By: gmach <gmach@student.42lyon.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/23 13:04:03 by gmach             #+#    #+#             */
-/*   Updated: 2026/02/24 18:12:32 by gildas           ###   ########lyon.fr   */
+/*   Updated: 2026/02/24 18:56:21 by gmach            ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,15 +34,10 @@ t_timespec	deadline_calculation(size_t last_compile_time, size_t time_to_burnout
 	return (deadline);
 }
 
-void dongle_take(t_sim *sim, t_dongle *dongle, t_coder *coder)
+void	dongle_take(t_sim *sim, t_dongle *dongle, t_coder *coder)
 {
 	t_timespec	deadline;
 
-	if (!sim || !dongle || !coder)
-	{
-		printf("error dongle\n");
-		return;
-	}
 	deadline = deadline_calculation(coder->last_compile_time, sim->time_to_burnout);
 	pthread_mutex_lock(&dongle->mutex);
 	while (!dongle->available)
@@ -52,10 +47,10 @@ void dongle_take(t_sim *sim, t_dongle *dongle, t_coder *coder)
 	pthread_mutex_unlock(&dongle->mutex);
 }
 
-void dongle_release(t_sim *sim, t_dongle *dongle)
+void	dongle_release(t_sim *sim, t_dongle *dongle)
 {
-	t_timeval now;
-	t_timespec timeout;
+	t_timeval	now;
+	t_timespec	timeout;
 
 	gettimeofday(&now, NULL);
 	timeout.tv_sec = now.tv_sec + sim->dongle_cooldown / 1000;

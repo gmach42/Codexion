@@ -3,16 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   init.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gildas <gildas@student.42lyon.fr>          +#+  +:+       +#+        */
+/*   By: gmach <gmach@student.42lyon.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/23 13:03:55 by gmach             #+#    #+#             */
-/*   Updated: 2026/02/24 18:08:27 by gildas           ###   ########lyon.fr   */
+/*   Updated: 2026/02/24 19:04:12 by gmach            ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "codexion.h"
 
-void simulation_init(t_sim *sim, char **argv)
+void	simulation_init(t_sim *sim, char **argv)
 {
 	sim->number_of_coders = atoi(argv[1]);
 	sim->time_to_burnout = atoi(argv[2]);
@@ -27,26 +27,25 @@ void simulation_init(t_sim *sim, char **argv)
 	pthread_mutex_init(&sim->print_mutex, NULL);
 }
 
-void coder_init(t_coder *coder, int id, t_dongle *left, t_dongle *right)
+void	coder_init(t_coder *coder, int id, t_dongle *left, t_dongle *right)
 {
 	coder->id = id;
 	coder->left = left;
 	coder->right = right;
-	coder->state = INIT;
 	coder->last_compile_time = get_current_time();
 	pthread_mutex_init(&coder->time_mutex, NULL);
 }
 
-void coders_init(t_sim *sim)
+void	coders_init(t_sim *sim)
 {
-	t_coder *coders;
-	t_dongle *dongles;
-	int i;
+	t_coder		*coders;
+	t_dongle	*dongles;
+	int			i;
 
 	i = 0;
 	coders = malloc(sizeof(t_coder) * sim->number_of_coders);
 	if (!coders)
-		return;
+		return ;
 	while (i < sim->number_of_coders)
 	{
 		coder_init(&coders[i], i, &sim->dongles[i], &sim->dongles[(i + 1) % sim->number_of_coders]);
@@ -55,9 +54,9 @@ void coders_init(t_sim *sim)
 	sim->coders = coders;
 }
 
-void dongle_init(t_dongle *dongle)
+void	dongle_init(t_dongle *dongle)
 {
-	t_heapq *waiting_q;
+	t_heapq	*waiting_q;
 
 	waiting_q = malloc(sizeof(t_heapq) * 2);
 	if (!waiting_q)
@@ -71,10 +70,10 @@ void dongle_init(t_dongle *dongle)
 	dongle->schedule = waiting_q;
 }
 
-void dongles_init(t_sim *sim)
+void	dongles_init(t_sim *sim)
 {
-	t_dongle *dongles;
-	int i;
+	t_dongle	*dongles;
+	int			i;
 
 	i = 0;
 	dongles = malloc(sizeof(t_dongle) * sim->number_of_coders);

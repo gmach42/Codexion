@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   codexion.h                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gildas <gildas@student.42lyon.fr>          +#+  +:+       +#+        */
+/*   By: gmach <gmach@student.42lyon.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/24 18:40:41 by gildas            #+#    #+#             */
-/*   Updated: 2026/02/24 18:45:02 by gildas           ###   ########lyon.fr   */
+/*   Updated: 2026/02/24 18:59:30 by gmach            ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,17 +22,11 @@
 # include <limits.h>	  // INT_MAX, INT_MIN
 # include <stdbool.h>  // bool, true, false
 
-# define INIT 0;
-# define COMPILE 1;
-# define DEBUG 2;
-# define REFACTOR 4;
-# define BURNOUT 8;
-
 // Alias for timeval and timespec
 typedef struct timeval	t_timeval;
 typedef struct timespec	t_timespec;
-typedef pthread_mutex_t	mutex_t;
-typedef pthread_cond_t	cond_t;
+typedef pthread_mutex_t	t_mutex;
+typedef pthread_cond_t	t_cond;
 
 typedef struct s_sim	t_sim;
 typedef struct s_coder	t_coder;
@@ -43,15 +37,15 @@ typedef struct s_dongle	t_dongle;
  *	@brief	Represent a schedule of a dongle
  *
  * @param coder_id		Coder's ID
- * @param arrival_time	Integer
- * @param deadline		Integer representing the time before burnout
+ * @param arrival_time	Arrival time in ms
+ * @param deadline		deadline = last_compile_start + time_to_burnout
  */
 typedef struct s_heapq
 {
-	int			coder_id;			/**< Coder ID */
-	t_timeval	arrival_time; /**< Arrival time in ms */
-	t_timespec	deadline;	/**< deadline = last_compile_start + time_to_burnout */
-} t_heapq;
+	int			coder_id;
+	t_timeval	arrival_time;
+	t_timespec	deadline;
+}	t_heapq;
 
 /**
  *	@file 	dongle.c
@@ -63,19 +57,17 @@ typedef struct s_heapq
  *
  * @param	mutex		Lock a dongle when it's used
  * @param	cond		Condition to lock the dongle (cooldown)
- * @param	available	True if the dongle is available, false if it's being used or in cooldown
+ * @param	available	true if available else false
  * @param	cooldown	Timestamp in ms of the cooldown
  * @param	schedule	Heapq storing coders for each dongle
  */
 typedef struct s_dongle
 {
-	mutex_t			mutex; /**< Protects access to dongle state */
-	pthread_cond_t	cond;   /**< Signal waiting coders */
-
-	bool			available; /**< Boolean indicating if the dongle is available */
-
-	t_heapq			*schedule; /**< Heapq of waiting coders */
-} t_dongle;
+	t_mutex	mutex; /**< Protects access to dongle state */
+	t_cond	cond; /**< Signal waiting coders */
+	bool	available; /**< Boolean indicating if the dongle is available */
+	t_heapq	*schedule; /**< Heapq of waiting coders */
+}	t_dongle;
 
 /**
  *	@file 	coder.c
@@ -89,31 +81,30 @@ typedef struct s_dongle
 typedef struct s_coder
 {
 	int			id;
-	int			state;
 
 	size_t		last_compile_time;
-	mutex_t		time_mutex;
+	t_mutex		time_mutex;
 
 	pthread_t	thread;
 	t_sim		*sim;
 
-	t_dongle	*left;	 /**< Pointer to the left dongle */
+	t_dongle	*left; /**< Pointer to the left dongle */
 	t_dongle	*right; /**< Pointer to the right dongle */
-} t_coder;
+}	t_coder;
 
 typedef struct s_sim
 {
-	t_coder 	*coders;
-	t_dongle 	*dongles;
+	t_coder		*coders;
+	t_dongle	*dongles;
 
 	pthread_t	monitor;
-	mutex_t		stop_mutex;
-	mutex_t		print_mutex;
+	t_mutex		stop_mutex;
+	t_mutex		print_mutex;
 	bool		stop;
 
-	int 		number_of_coders;
-	int 		number_of_compiles;
-	int 		number_of_compiles_required;
+	int			number_of_coders;
+	int			number_of_compiles;
+	int			number_of_compiles_required;
 
 	size_t		time_to_burnout;
 	size_t		time_to_debug;
@@ -122,7 +113,7 @@ typedef struct s_sim
 	size_t		dongle_cooldown;
 	size_t		start_time;
 
-} t_sim;
+}	t_sim;
 
 void	compile(t_sim *sim, t_coder *coder);
 void	debug(t_sim *sim, t_coder *coder);

@@ -1,4 +1,4 @@
-# include "codexion.h"
+#include "codexion.h"
 
 /**
  * @brief Files to parse arguments
@@ -13,6 +13,5 @@
  * - dongle_cooldown (float)
  * - scheduler (char *) 'fifo' or 'edf'
  */
-
 
 // TODO Check if no negative and types as well if scheduler is fifo or edf

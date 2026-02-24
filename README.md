@@ -19,7 +19,7 @@ Logic
 2. Try to take RIGHT dongle → mutex_lock + wait if not available
 3. Log "has taken a dongle" (x2)
 4. compile()  → usleep(time_to_compile)
-5. Release both dongles → each starts its cooldown (cond_timedwait)
+5. Release both dongles → each starts its cooldown (t_condimedwait)
 6. debug()    → usleep(time_to_debug)
 7. refactor() → usleep(time_to_refactor)
 8. Repeat until burned out or compiled enough
