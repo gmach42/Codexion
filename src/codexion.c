@@ -60,7 +60,7 @@ void	*monitor_routine(void *arg)
 			pthread_mutex_unlock(&sim->coders[i].time_mutex);
             if (get_current_time() - last > sim->time_to_burnout)
             {
-                safe_print(sim, sim->coders[i].id, "has burned out");
+                safe_print(sim, sim->coders[i].id, "burned out");
                 stop_simulation(sim);
                 return (NULL);
             }

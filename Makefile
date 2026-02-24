@@ -43,11 +43,11 @@ $(BUILD_DIR):
 
 t: re
 	$(CC) $(FLAGS) $(OBJS) -o $(NAME)
-	./$(NAME) 4 6000 3000 1000 1000 10 100 fifo
+	./$(NAME) 4 600 300 100 100 10 100 fifo
 
 debug:
 	$(CC) $(FLAGS) $(DEBUG_FLAGS) $(OBJS) -o $(NAME)
-	./$(NAME) 4 6000 3000 1000 1000 10 100 fifo
+	./$(NAME) 4 600 300 100 100 10 100 fifo
 # 	gdb --args $(NAME) 4 5000 1 1 1 2 1 fifo
 
 clean:

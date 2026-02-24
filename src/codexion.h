@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   codexion.h                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: gildas <gildas@student.42lyon.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/02/24 18:40:41 by gildas            #+#    #+#             */
+/*   Updated: 2026/02/24 18:45:02 by gildas           ###   ########lyon.fr   */
+/*                                                                            */
+/* ************************************************************************** */
+
 #ifndef CODEXION_H
 # define CODEXION_H
 
@@ -22,9 +34,9 @@ typedef struct timespec	t_timespec;
 typedef pthread_mutex_t	mutex_t;
 typedef pthread_cond_t	cond_t;
 
-typedef struct s_sim t_sim;
-typedef struct s_coder t_coder;
-typedef struct s_dongle t_dongle;
+typedef struct s_sim	t_sim;
+typedef struct s_coder	t_coder;
+typedef struct s_dongle	t_dongle;
 
 /**
  *	@file 	scheduler.c
@@ -36,9 +48,9 @@ typedef struct s_dongle t_dongle;
  */
 typedef struct s_heapq
 {
-	int coder_id;			/**< Coder ID */
-	t_timeval arrival_time; /**< Arrival time in ms */
-	t_timespec deadline;	/**< deadline = last_compile_start + time_to_burnout */
+	int			coder_id;			/**< Coder ID */
+	t_timeval	arrival_time; /**< Arrival time in ms */
+	t_timespec	deadline;	/**< deadline = last_compile_start + time_to_burnout */
 } t_heapq;
 
 /**
@@ -57,12 +69,12 @@ typedef struct s_heapq
  */
 typedef struct s_dongle
 {
-	mutex_t mutex; /**< Protects access to dongle state */
-	pthread_cond_t cond;   /**< Signal waiting coders */
+	mutex_t			mutex; /**< Protects access to dongle state */
+	pthread_cond_t	cond;   /**< Signal waiting coders */
 
-	bool available; /**< Boolean indicating if the dongle is available */
+	bool			available; /**< Boolean indicating if the dongle is available */
 
-	t_heapq *schedule; /**< Heapq of waiting coders */
+	t_heapq			*schedule; /**< Heapq of waiting coders */
 } t_dongle;
 
 /**
@@ -76,17 +88,17 @@ typedef struct s_dongle
  */
 typedef struct s_coder
 {
-	int id;
-	int state;
+	int			id;
+	int			state;
 
-	size_t	last_compile_time;
-	mutex_t time_mutex;
+	size_t		last_compile_time;
+	mutex_t		time_mutex;
 
-	pthread_t thread;
-	t_sim *sim;
+	pthread_t	thread;
+	t_sim		*sim;
 
-	t_dongle *left;	 /**< Pointer to the left dongle */
-	t_dongle *right; /**< Pointer to the right dongle */
+	t_dongle	*left;	 /**< Pointer to the left dongle */
+	t_dongle	*right; /**< Pointer to the right dongle */
 } t_coder;
 
 typedef struct s_sim
@@ -112,21 +124,21 @@ typedef struct s_sim
 
 } t_sim;
 
-void compile(t_sim *sim, t_coder *coder);
-void debug(t_sim *sim, t_coder *coder);
-void refactor(t_sim *sim, t_coder *coder);
-void *routine(void *arg);
-void safe_print(t_sim *sim, int id, char *msg);
+void	compile(t_sim *sim, t_coder *coder);
+void	debug(t_sim *sim, t_coder *coder);
+void	refactor(t_sim *sim, t_coder *coder);
+void	*routine(void *arg);
+void	safe_print(t_sim *sim, int id, char *msg);
 bool	sim_stopped(t_sim *sim);
 
-void dongle_take(t_sim *sim, t_dongle *dongle, t_coder *coder);
-void dongle_release(t_sim *sim, t_dongle *dongle);
+void	dongle_take(t_sim *sim, t_dongle *dongle, t_coder *coder);
+void	dongle_release(t_sim *sim, t_dongle *dongle);
 
-void simulation_init(t_sim *sim, char **argv);
-void coders_init(t_sim *sim);
-void dongles_init(t_sim *sim);
+void	simulation_init(t_sim *sim, char **argv);
+void	coders_init(t_sim *sim);
+void	dongles_init(t_sim *sim);
 
-size_t time_since_start(t_sim *sim);
-size_t get_current_time(void);
+size_t	time_since_start(t_sim *sim);
+size_t	get_current_time(void);
 
 #endif
