@@ -3,33 +3,28 @@
 /*                                                        :::      ::::::::   */
 /*   init.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gmach <gmach@student.42lyon.fr>            +#+  +:+       +#+        */
+/*   By: gildas <gildas@student.42lyon.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/23 13:03:55 by gmach             #+#    #+#             */
-/*   Updated: 2026/02/24 13:50:04 by gmach            ###   ########lyon.fr   */
+/*   Updated: 2026/02/24 18:08:27 by gildas           ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "codexion.h"
 
-t_sim simulation_init(char **argv)
+void simulation_init(t_sim *sim, char **argv)
 {
-	t_sim sim;
-
-	sim.number_of_coders = atoi(argv[1]);
-	sim.time_to_burnout = atoi(argv[2]) * 1000000;
-	sim.time_to_compile = atoi(argv[3]) * 1000000;
-	sim.time_to_debug = atoi(argv[4]) * 1000000;
-	sim.time_to_refactor = atoi(argv[5]) * 1000000;
-	sim.number_of_compiles_required = atoi(argv[6]);
-	sim.dongle_cooldown = atoi(argv[7]) * 1000000;
-	sim.start_time = get_current_time();
-	sim.stop = false;
-
-	coders_init(&sim);
-	dongles_init(&sim);
-
-	return (sim);
+	sim->number_of_coders = atoi(argv[1]);
+	sim->time_to_burnout = atoi(argv[2]);
+	sim->time_to_compile = atoi(argv[3]);
+	sim->time_to_debug = atoi(argv[4]);
+	sim->time_to_refactor = atoi(argv[5]);
+	sim->number_of_compiles_required = atoi(argv[6]);
+	sim->dongle_cooldown = atoi(argv[7]);
+	sim->start_time = get_current_time();
+	sim->stop = false;
+	pthread_mutex_init(&sim->stop_mutex, NULL);
+	pthread_mutex_init(&sim->print_mutex, NULL);
 }
 
 void coder_init(t_coder *coder, int id, t_dongle *left, t_dongle *right)
@@ -39,6 +34,7 @@ void coder_init(t_coder *coder, int id, t_dongle *left, t_dongle *right)
 	coder->right = right;
 	coder->state = INIT;
 	coder->last_compile_time = get_current_time();
+	pthread_mutex_init(&coder->time_mutex, NULL);
 }
 
 void coders_init(t_sim *sim)
@@ -61,8 +57,6 @@ void coders_init(t_sim *sim)
 
 void dongle_init(t_dongle *dongle)
 {
-	cond_t cond;
-	mutex_t mutex;
 	t_heapq *waiting_q;
 
 	waiting_q = malloc(sizeof(t_heapq) * 2);
@@ -71,12 +65,9 @@ void dongle_init(t_dongle *dongle)
 		printf("Error while creating dongles\n");
 		exit(EXIT_FAILURE);
 	}
-	pthread_cond_init(&cond, NULL);
-	pthread_mutex_init(&mutex, NULL);
+	pthread_cond_init(&dongle->cond, NULL);
+	pthread_mutex_init(&dongle->mutex, NULL);
 	dongle->available = true;
-	dongle->cond = cond;
-	dongle->mutex = mutex;
-	printf("mutex %X\n",mutex);
 	dongle->schedule = waiting_q;
 }
 

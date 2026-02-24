@@ -16,39 +16,60 @@
 // 	printf("start time: %d\n\n", sim->start_time);
 // }
 
-// int sim_stopped(t_sim *sim)
-// {
-//     int stopped;
+bool	sim_stopped(t_sim *sim)
+{
+    bool stopped;
 
-//     pthread_mutex_lock(&sim->stop_mutex);
-//     stopped = sim->stop;
-//     pthread_mutex_unlock(&sim->stop_mutex);
-//     return (stopped);
-// }
+    pthread_mutex_lock(&sim->stop_mutex);
+    stopped = sim->stop;
+    pthread_mutex_unlock(&sim->stop_mutex);
+    return (stopped);
+}
 
-void stop_simulation(t_sim *sim)
+void	safe_print(t_sim *sim, int id, char *msg)
+{
+    pthread_mutex_lock(&sim->print_mutex);
+    if (!sim_stopped(sim))
+        printf("%zu %d %s\n",
+               get_current_time() - sim->start_time,
+               id,
+               msg);
+    pthread_mutex_unlock(&sim->print_mutex);
+}
+
+void	stop_simulation(t_sim *sim)
 {
     pthread_mutex_lock(&sim->stop_mutex);
     sim->stop = true;
     pthread_mutex_unlock(&sim->stop_mutex);
 }
 
-void *monitor_routine(void *arg)
+void	*monitor_routine(void *arg)
 {
     t_sim *sim = (t_sim *)arg;
     int i;
+	size_t last;
 
-    while (!simulation_stopped(sim))
+    while (!sim_stopped(sim))
     {
         i = 0;
         while (i < sim->number_of_coders)
         {
-            if (get_current_time() - sim->coders[i].last_compile_time > sim->time_to_burnout)
+			pthread_mutex_lock(&sim->coders[i].time_mutex);
+			last = sim->coders[i].last_compile_time;
+			pthread_mutex_unlock(&sim->coders[i].time_mutex);
+            if (get_current_time() - last > sim->time_to_burnout)
             {
-                printf("%d has burned out\n", sim->coders[i].id);
+                safe_print(sim, sim->coders[i].id, "has burned out");
                 stop_simulation(sim);
                 return (NULL);
             }
+			if (sim->number_of_compiles >= sim->number_of_compiles_required)
+			{
+				printf("%zu Simulation Complete\n", get_current_time() - sim->start_time);
+				stop_simulation(sim);
+				return (NULL);
+			}
             i++;
         }
         usleep(1000);
@@ -56,7 +77,30 @@ void *monitor_routine(void *arg)
     return (NULL);
 }
 
-int main(int argc, char **argv)
+void	clean_up(t_sim *sim)
+{
+	int i;
+
+	pthread_mutex_destroy(&sim->stop_mutex);
+	pthread_mutex_destroy(&sim->print_mutex);
+	i = 0;
+	while (i < sim->number_of_coders)
+	{
+		pthread_mutex_destroy(&sim->coders[i].time_mutex);
+		i++;
+	}
+	i = 0;
+	while (i < sim->number_of_coders)
+	{
+		pthread_cond_destroy(&sim->dongles[i].cond);
+		pthread_mutex_destroy(&sim->dongles[i].mutex);
+		i++;
+	}
+	free(sim->coders);
+	free(sim->dongles);
+}
+
+int	main(int argc, char **argv)
 {
 	t_sim sim;
 	t_coder *coders;
@@ -71,21 +115,26 @@ int main(int argc, char **argv)
 		return (0);
 	}
 
-	sim = simulation_init(argv);
-	pthread_create(&monitor_thread, NULL, monitor_routine, &sim);
+	simulation_init(&sim, argv);
+	dongles_init(&sim);
+	coders_init(&sim);
 
-	printf("\n	START:\n\n");
+	sim.start_time = get_current_time();
+	pthread_create(&monitor_thread, NULL, monitor_routine, &sim);
 	i = 0;
 	while (i < sim.number_of_coders)
 	{
+		if (i % 2 == 0)
+			usleep(1000);
 		pthread_create(&sim.coders[i].thread, NULL, routine, &sim.coders[i]);
 		i++;
 	}
+
 	i = 0;
+	pthread_join(monitor_thread, NULL);
 	while (i < sim.number_of_coders)
 		pthread_join(sim.coders[i++].thread, NULL);
-	pthread_join(monitor_thread, NULL);
-	// destroy(simulation, coders, dongles, monitor_thread);
+	clean_up(&sim);
 
 	return 0;
 }

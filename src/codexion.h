@@ -80,6 +80,7 @@ typedef struct s_coder
 	int state;
 
 	size_t	last_compile_time;
+	mutex_t time_mutex;
 
 	pthread_t thread;
 	t_sim *sim;
@@ -115,15 +116,16 @@ void compile(t_sim *sim, t_coder *coder);
 void debug(t_sim *sim, t_coder *coder);
 void refactor(t_sim *sim, t_coder *coder);
 void *routine(void *arg);
+void safe_print(t_sim *sim, int id, char *msg);
+bool	sim_stopped(t_sim *sim);
 
 void dongle_take(t_sim *sim, t_dongle *dongle, t_coder *coder);
 void dongle_release(t_sim *sim, t_dongle *dongle);
 
-t_sim simulation_init(char **argv);
+void simulation_init(t_sim *sim, char **argv);
 void coders_init(t_sim *sim);
 void dongles_init(t_sim *sim);
 
-bool simulation_stopped(t_sim *sim);
 size_t time_since_start(t_sim *sim);
 size_t get_current_time(void);
 

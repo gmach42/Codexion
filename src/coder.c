@@ -2,25 +2,28 @@
 
 void compile(t_sim *sim, t_coder *coder)
 {
-	printf("%ld %d is compiling\n", time_since_start(sim), coder->id);
+	safe_print(sim, coder->id, "is compiling");
 	coder->state = COMPILE;
-	usleep(sim->time_to_compile);
+	pthread_mutex_lock(&coder->time_mutex);
+	coder->last_compile_time = get_current_time();
+	pthread_mutex_unlock(&coder->time_mutex);
+	usleep(sim->time_to_compile * 1000);
 	dongle_release(sim, coder->left);
 	dongle_release(sim, coder->right);
 }
 
 void debug(t_sim *sim, t_coder *coder)
 {
-	printf("%ld %d is debugging\n", time_since_start(sim), coder->id);
+	safe_print(sim, coder->id, "is debugging");
 	coder->state = DEBUG;
-	usleep(sim->time_to_compile);
+	usleep(sim->time_to_debug * 1000);
 }
 
 void refactor(t_sim *sim, t_coder *coder)
 {
-	printf("%ld %d is refactoring\n", time_since_start(sim), coder->id);
+	safe_print(sim, coder->id, "is refactoring");
 	coder->state = REFACTOR;
-	usleep(sim->time_to_compile);
+	usleep(sim->time_to_refactor * 1000);
 }
 
 void *routine(void *arg)
@@ -28,19 +31,23 @@ void *routine(void *arg)
 	t_coder *coder;
 
 	coder = (t_coder *)arg;
-	printf("test\n");
+	if (coder->id % 2 != 0)
+		usleep(1000);
 
-	while (!coder->sim->stop)
+	while (!sim_stopped(coder->sim))
 	{
-		printf("start routine\n");
-		printf("sim %X, dongle %X, coder %X\n", coder->sim, coder->left, coder);
 		dongle_take(coder->sim, coder->left, coder);
 		dongle_take(coder->sim, coder->right, coder);
+		if (sim_stopped(coder->sim))
+            break;
 		compile(coder->sim, coder);
+		if (sim_stopped(coder->sim))
+            break;
 		debug(coder->sim, coder);
+		if (sim_stopped(coder->sim))
+            break;
 		refactor(coder->sim, coder);
 		coder->sim->number_of_compiles++;
-		printf("Compilation num %d complete!\n\n", coder->sim->number_of_compiles);
 	}
 	return (NULL);
 }
