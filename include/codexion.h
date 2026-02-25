@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   codexion.h                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: gmach <gmach@student.42lyon.fr>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/02/25 17:30:08 by gmach             #+#    #+#             */
+/*   Updated: 2026/02/25 17:51:38 by gmach            ###   ########lyon.fr   */
+/*                                                                            */
+/* ************************************************************************** */
+
 #ifndef CODEXION_H
 # define CODEXION_H
 
@@ -20,6 +32,23 @@ typedef struct s_sim	t_sim;
 typedef struct s_coder	t_coder;
 typedef struct s_dongle	t_dongle;
 
+# define GREEN "\033[0;32m"
+# define BLUE "\033[0;36m"
+# define YELLOW "\033[0;33m"
+# define RED "\033[1;31m"
+# define CYAN "\033[0;35m"
+# define FLASH "\033[1;93m"
+# define NC "\033[0m"
+
+enum
+{
+	DONGLE = 0,
+	COMPILE = 1,
+	DEBUG = 2,
+	REFACTOR = 4,
+	BURNOUT = 8,
+};
+
 /**
  *	@file 	dongle.c
  *	@brief	Represent a shared USB dongle
@@ -32,7 +61,6 @@ typedef struct s_dongle	t_dongle;
  * @param	cond		Condition to lock the dongle (cooldown)
  * @param	available	true if available else false
  * @param	cooldown	Timestamp in ms of the cooldown
- * @param	schedule	Heapq storing coders for each dongle
  */
 typedef struct s_dongle
 {
@@ -89,20 +117,21 @@ typedef struct s_sim
 
 }	t_sim;
 
-void	compile(t_sim *sim, t_coder *coder);
-void	debug(t_sim *sim, t_coder *coder);
-void	refactor(t_sim *sim, t_coder *coder);
+bool	compile(t_sim *sim, t_coder *coder);
+bool	debug(t_sim *sim, t_coder *coder);
+bool	refactor(t_sim *sim, t_coder *coder);
 void	*routine(void *arg);
 void	safe_print(t_sim *sim, int id, char *msg);
 void	sim_stop_setter(t_sim *sim);
 bool	sim_stop_getter(t_sim *sim);
 
-void	dongle_take(t_sim *sim, t_dongle *dongle, t_coder *coder);
+bool	dongle_take(t_sim *sim, t_dongle *dongle, t_coder *coder);
 void	dongle_release(t_sim *sim, t_dongle *dongle);
 
 void	simulation_init(t_sim *sim, char **argv);
 void	coders_init(t_sim *sim);
 void	dongles_init(t_sim *sim);
+void	*monitor_routine(void *arg);
 
 size_t	time_since_start(t_sim *sim);
 size_t	get_current_time(void);

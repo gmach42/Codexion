@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   init.c                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: gmach <gmach@student.42lyon.fr>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/02/25 17:30:13 by gmach             #+#    #+#             */
+/*   Updated: 2026/02/25 17:30:14 by gmach            ###   ########lyon.fr   */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "codexion.h"
 
 void	simulation_init(t_sim *sim, char **argv)
@@ -39,7 +51,6 @@ void	coder_init(t_sim *sim, t_coder *coder, int id, t_dongle *left, t_dongle *ri
 void	coders_init(t_sim *sim)
 {
 	t_coder		*coders;
-	t_dongle	*dongles;
 	int			i;
 
 	i = 0;

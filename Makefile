@@ -2,19 +2,14 @@
 NAME := codexion
 
 BUILD_DIR := .build
-
 SRC_DIR := src
 
 RM := rm -f
-
 CC := cc
 
 CFLAGS := -Wall -Werror -Wextra
-
-FLAGS := -pthread -I.
-
-DEBUG_FLAGS := -g -O0 # -fsanitize=thread
-
+FLAGS := -pthread -Iinclude
+DEBUG_FLAGS := -g -O0 #-fsanitize=thread
 DEPFLAGS := -MMD -MP
 
 SRCS := $(addprefix $(SRC_DIR)/, \
@@ -22,7 +17,7 @@ SRCS := $(addprefix $(SRC_DIR)/, \
 	coder.c\
 	dongle.c\
 	monitor.c\
-	parser.c\
+	parsing.c\
 	utils.c\
 	init.c\
 	)
@@ -33,25 +28,28 @@ DEPS := $(patsubst %.o, %.d, $(OBJS))
 all: $(NAME)
 
 $(NAME): $(OBJS)
-	$(CC) $(FLAGS) $(OBJS) -o $(NAME)
+	$(CC) $(CFLAGS) $(FLAGS) $(OBJS) -o $(NAME)
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c | $(BUILD_DIR)
-	$(CC) $(FLAGS) $(DEPFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) $(FLAGS) $(DEPFLAGS) -c $< -o $@
 
 $(BUILD_DIR):
 	mkdir -p $@
 
 t: re
-	$(CC) $(FLAGS) $(OBJS) -o $(NAME)
+	$(CC) $(CFLAGS) $(FLAGS) $(OBJS) -o $(NAME)
 	./$(NAME) 4 600 300 100 100 10 100 fifo
 
-debug:
+debug: $(OBJS)
 	$(CC) $(FLAGS) $(DEBUG_FLAGS) $(OBJS) -o $(NAME)
 	./$(NAME) 4 600 300 100 100 10 100 fifo
-# 	gdb --args $(NAME) 4 5000 1 1 1 2 1 fifo
 
-valgrind:
-	$(CC) $(FLAGS) $(DEBUG_FLAGS) $(OBJS) -o $(NAME)
+gdb: $(OBJS)
+	$(CC) $(CFLAGS) $(FLAGS) $(DEBUG_FLAGS) $(OBJS) -o $(NAME)
+	gdb --args $(NAME) 4 600 300 100 100 10 100 fifo
+
+valgrind: $(OBJS)
+	$(CC) $(CFLAGS) $(FLAGS) $(DEBUG_FLAGS) $(OBJS) -o $(NAME)
 	valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all --tool=memcheck ./$(NAME) 4 600 300 100 100 10 100 fifo
 
 clean:

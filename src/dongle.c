@@ -6,7 +6,7 @@
 /*   By: gmach <gmach@student.42lyon.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/23 13:04:03 by gmach             #+#    #+#             */
-/*   Updated: 2026/02/25 10:25:58 by gmach            ###   ########lyon.fr   */
+/*   Updated: 2026/02/25 17:29:49 by gmach            ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,10 +23,12 @@ t_timespec	deadline_calculation(size_t last_compile_time, size_t time_to_burnout
 	return (deadline);
 }
 
-void	dongle_take(t_sim *sim, t_dongle *dongle, t_coder *coder)
+bool	dongle_take(t_sim *sim, t_dongle *dongle, t_coder *coder)
 {
 	t_timespec	deadline;
 
+	if (sim_stop_getter(sim))
+		return (false);
 	deadline = deadline_calculation(coder->last_compile_time, sim->time_to_burnout);
 	pthread_mutex_lock(&dongle->mutex);
 	while (!dongle->available)
@@ -39,6 +41,7 @@ void	dongle_take(t_sim *sim, t_dongle *dongle, t_coder *coder)
 	dongle->available = false;
 	safe_print(sim, coder->id, "has taken a dongle");
 	pthread_mutex_unlock(&dongle->mutex);
+	return (true);
 }
 
 void	dongle_release(t_sim *sim, t_dongle *dongle)

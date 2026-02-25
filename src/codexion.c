@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   codexion.c                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: gmach <gmach@student.42lyon.fr>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/02/25 17:29:52 by gmach             #+#    #+#             */
+/*   Updated: 2026/02/25 17:33:24 by gmach            ###   ########lyon.fr   */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "codexion.h"
 
 // void print_sim_state(t_sim *sim)
@@ -44,40 +56,6 @@ void	sim_stop_setter(t_sim *sim)
 	pthread_mutex_unlock(&sim->stop_mutex);
 }
 
-void	*monitor_routine(void *arg)
-{
-	t_sim	*sim;
-	int		i;
-	size_t	last;
-
-	sim = (t_sim *)arg;
-	while (!sim_stop_getter(sim))
-	{
-		i = 0;
-		while (i < sim->number_of_coders)
-		{
-			pthread_mutex_lock(&sim->coders[i].time_mutex);
-			last = sim->coders[i].last_compile_time;
-			pthread_mutex_unlock(&sim->coders[i].time_mutex);
-			if (get_current_time() - last > sim->time_to_burnout)
-			{
-				safe_print(sim, sim->coders[i].id, "burned out");
-				sim_stop_setter(sim);
-				return (NULL);
-			}
-			if (sim->number_of_compiles >= sim->number_of_compiles_required)
-			{
-				printf("%zu Simulation Complete\n", get_current_time() - sim->start_time);
-				sim_stop_setter(sim);
-				return (NULL);
-			}
-			i++;
-		}
-		usleep(1000);
-	}
-	return (NULL);
-}
-
 void	clean_up(t_sim *sim)
 {
 	int	i;
@@ -101,8 +79,6 @@ void	clean_up(t_sim *sim)
 int	main(int argc, char **argv)
 {
 	t_sim		sim;
-	t_coder		*coders;
-	t_dongle	*dongles;
 	pthread_t	monitor_thread;
 	int			i;
 

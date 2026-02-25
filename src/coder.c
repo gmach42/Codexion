@@ -1,26 +1,60 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   coder.c                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: gmach <gmach@student.42lyon.fr>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/02/25 17:29:58 by gmach             #+#    #+#             */
+/*   Updated: 2026/02/25 17:29:59 by gmach            ###   ########lyon.fr   */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "codexion.h"
 
-void	compile(t_sim *sim, t_coder *coder)
+void	better_sleep(t_sim *sim, size_t duration_ms)
 {
+	size_t	start_time;
+
+	start_time = get_current_time();
+	while (!sim_stop_getter(sim))
+	{
+		if (get_current_time() - start_time >= duration_ms)
+			break ;
+		usleep(duration_ms * 1000 / 10);
+	}
+}
+
+bool	compile(t_sim *sim, t_coder *coder)
+{
+	if (sim_stop_getter(sim))
+		return (false);
 	safe_print(sim, coder->id, "is compiling");
 	pthread_mutex_lock(&coder->time_mutex);
 	coder->last_compile_time = get_current_time();
 	pthread_mutex_unlock(&coder->time_mutex);
-	usleep(sim->time_to_compile * 1000);
+	better_sleep(sim, sim->time_to_compile);
 	dongle_release(sim, coder->left);
 	dongle_release(sim, coder->right);
+	return (true);
 }
 
-void	debug(t_sim *sim, t_coder *coder)
+bool	debug(t_sim *sim, t_coder *coder)
 {
+	if (sim_stop_getter(sim))
+		return (false);
 	safe_print(sim, coder->id, "is debugging");
-	usleep(sim->time_to_debug * 1000);
+	better_sleep(sim, sim->time_to_debug);
+	return (true);
 }
 
-void	refactor(t_sim *sim, t_coder *coder)
+bool	refactor(t_sim *sim, t_coder *coder)
 {
+	if (sim_stop_getter(sim))
+		return (false);
 	safe_print(sim, coder->id, "is refactoring");
-	usleep(sim->time_to_refactor * 1000);
+	better_sleep(sim, sim->time_to_refactor);
+	return (true);
 }
 
 void	*routine(void *arg)
@@ -32,18 +66,15 @@ void	*routine(void *arg)
 		usleep(1000);
 	while (!sim_stop_getter(coder->sim))
 	{
-		dongle_take(coder->sim, coder->left, coder);
-		dongle_take(coder->sim, coder->right, coder);
-		if (sim_stop_getter(coder->sim))
+		if (!dongle_take(coder->sim, coder->left, coder))
 			break ;
-		compile(coder->sim, coder);
-		if (sim_stop_getter(coder->sim))
+		if (!dongle_take(coder->sim, coder->right, coder))
 			break ;
-		debug(coder->sim, coder);
-		if (sim_stop_getter(coder->sim))
+		if (!compile(coder->sim, coder))
 			break ;
-		refactor(coder->sim, coder);
-		if (sim_stop_getter(coder->sim))
+		if (!debug(coder->sim, coder))
+			break ;
+		if (!refactor(coder->sim, coder))
 			break ;
 		pthread_mutex_lock(&coder->sim->compile_mutex);
 		coder->sim->number_of_compiles++;
