@@ -88,6 +88,7 @@ typedef struct s_sim
 	pthread_t	monitor;
 	t_mutex		stop_mutex;
 	t_mutex		print_mutex;
+	t_mutex		compile_mutex;
 	bool		stop;
 
 	int			number_of_coders;
@@ -108,7 +109,8 @@ void	debug(t_sim *sim, t_coder *coder);
 void	refactor(t_sim *sim, t_coder *coder);
 void	*routine(void *arg);
 void	safe_print(t_sim *sim, int id, char *msg);
-bool	sim_stopped(t_sim *sim);
+void	sim_stop_setter(t_sim *sim);
+bool	sim_stop_getter(t_sim *sim);
 
 void	dongle_take(t_sim *sim, t_dongle *dongle, t_coder *coder);
 void	dongle_release(t_sim *sim, t_dongle *dongle);

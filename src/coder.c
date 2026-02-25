@@ -30,20 +30,26 @@ void	*routine(void *arg)
 	coder = (t_coder *)arg;
 	if (coder->id % 2 != 0)
 		usleep(1000);
-	while (!sim_stopped(coder->sim))
+	while (!sim_stop_getter(coder->sim))
 	{
 		dongle_take(coder->sim, coder->left, coder);
 		dongle_take(coder->sim, coder->right, coder);
-		if (sim_stopped(coder->sim))
+		if (sim_stop_getter(coder->sim))
 			break ;
 		compile(coder->sim, coder);
-		if (sim_stopped(coder->sim))
+		if (sim_stop_getter(coder->sim))
 			break ;
 		debug(coder->sim, coder);
-		if (sim_stopped(coder->sim))
+		if (sim_stop_getter(coder->sim))
 			break ;
 		refactor(coder->sim, coder);
+		if (sim_stop_getter(coder->sim))
+			break ;
+		pthread_mutex_lock(&coder->sim->compile_mutex);
 		coder->sim->number_of_compiles++;
+		pthread_mutex_unlock(&coder->sim->compile_mutex);
+		if (sim_stop_getter(coder->sim))
+			break ;
 	}
 	return (NULL);
 }

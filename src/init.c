@@ -11,16 +11,19 @@ void	simulation_init(t_sim *sim, char **argv)
 	sim->dongle_cooldown = atoi(argv[7]);
 	sim->start_time = get_current_time();
 	sim->stop = false;
+	sim->number_of_compiles = 0;
 	pthread_mutex_init(&sim->stop_mutex, NULL);
 	pthread_mutex_init(&sim->print_mutex, NULL);
+	pthread_mutex_init(&sim->compile_mutex, NULL);
 }
 
-void	coder_init(t_coder *coder, int id, t_dongle *left, t_dongle *right)
+void	coder_init(t_sim *sim, t_coder *coder, int id, t_dongle *left, t_dongle *right)
 {
 	coder->id = id;
 	coder->left = left;
 	coder->right = right;
-	coder->last_compile_time = get_current_time();
+	coder->sim = sim;
+	coder->last_compile_time = sim->start_time;
 	pthread_mutex_init(&coder->time_mutex, NULL);
 }
 
@@ -36,7 +39,7 @@ void	coders_init(t_sim *sim)
 		return ;
 	while (i < sim->number_of_coders)
 	{
-		coder_init(&coders[i], i, &sim->dongles[i], &sim->dongles[(i + 1) % sim->number_of_coders]);
+		coder_init(sim, &coders[i], i, &sim->dongles[i], &sim->dongles[(i + 1) % sim->number_of_coders]);
 		coders[i++].sim = sim;
 	}
 	sim->coders = coders;

@@ -13,7 +13,7 @@ CFLAGS := -Wall -Werror -Wextra
 
 FLAGS := -pthread -I.
 
-DEBUG_FLAGS := -g -fsanitize=thread
+DEBUG_FLAGS := -g -O0 # -fsanitize=thread
 
 DEPFLAGS := -MMD -MP
 
@@ -49,6 +49,10 @@ debug:
 	$(CC) $(FLAGS) $(DEBUG_FLAGS) $(OBJS) -o $(NAME)
 	./$(NAME) 4 600 300 100 100 10 100 fifo
 # 	gdb --args $(NAME) 4 5000 1 1 1 2 1 fifo
+
+valgrind:
+	$(CC) $(FLAGS) $(DEBUG_FLAGS) $(OBJS) -o $(NAME)
+	valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all --tool=memcheck ./$(NAME) 4 600 300 100 100 10 100 fifo
 
 clean:
 	$(RM) $(OBJS) $(DEPS)
