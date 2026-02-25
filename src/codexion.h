@@ -21,21 +21,6 @@ typedef struct s_coder	t_coder;
 typedef struct s_dongle	t_dongle;
 
 /**
- *	@file 	scheduler.c
- *	@brief	Represent a schedule of a dongle
- *
- * @param coder_id		Coder's ID
- * @param arrival_time	Arrival time in ms
- * @param deadline		deadline = last_compile_start + time_to_burnout
- */
-typedef struct s_heapq
-{
-	int			coder_id;
-	t_timeval	arrival_time;
-	t_timespec	deadline;
-}	t_heapq;
-
-/**
  *	@file 	dongle.c
  *	@brief	Represent a shared USB dongle
  *
@@ -54,7 +39,6 @@ typedef struct s_dongle
 	t_mutex	mutex; /**< Protects access to dongle state */
 	t_cond	cond; /**< Signal waiting coders */
 	bool	available; /**< Boolean indicating if the dongle is available */
-	t_heapq	*schedule; /**< Heapq of waiting coders */
 }	t_dongle;
 
 /**
@@ -90,6 +74,7 @@ typedef struct s_sim
 	t_mutex		print_mutex;
 	t_mutex		compile_mutex;
 	bool		stop;
+	int			dongle_schedule;
 
 	int			number_of_coders;
 	int			number_of_compiles;

@@ -94,8 +94,6 @@ void	clean_up(t_sim *sim)
 		pthread_mutex_destroy(&sim->dongles[i].mutex);
 		i++;
 	}
-	while (i < sim->number_of_coders)
-		free(sim->dongles[i++].schedule);
 	free(sim->coders);
 	free(sim->dongles);
 }

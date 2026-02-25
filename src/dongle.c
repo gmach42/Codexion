@@ -6,22 +6,11 @@
 /*   By: gmach <gmach@student.42lyon.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/23 13:04:03 by gmach             #+#    #+#             */
-/*   Updated: 2026/02/24 18:56:21 by gmach            ###   ########lyon.fr   */
+/*   Updated: 2026/02/25 10:25:58 by gmach            ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "codexion.h"
-
-// void	dongle_cleanup(t_dongle **dongle)
-// {
-// 	int	i;
-
-// 	i = 0;
-// 	while (i < dongle[i])
-// 	{
-// 		pthread_mutex_destroy(&dongle[i++]->mutex);
-// 	}
-// }
 
 t_timespec	deadline_calculation(size_t last_compile_time, size_t time_to_burnout)
 {
@@ -41,7 +30,12 @@ void	dongle_take(t_sim *sim, t_dongle *dongle, t_coder *coder)
 	deadline = deadline_calculation(coder->last_compile_time, sim->time_to_burnout);
 	pthread_mutex_lock(&dongle->mutex);
 	while (!dongle->available)
-		pthread_cond_timedwait(&dongle->cond, &dongle->mutex, &deadline);
+	{
+		if (sim->dongle_schedule == 0)
+			pthread_cond_wait(&dongle->cond, &dongle->mutex);
+		else
+			pthread_cond_timedwait(&dongle->cond, &dongle->mutex, &deadline);
+	}
 	dongle->available = false;
 	safe_print(sim, coder->id, "has taken a dongle");
 	pthread_mutex_unlock(&dongle->mutex);

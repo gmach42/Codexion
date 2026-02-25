@@ -12,6 +12,15 @@ void	simulation_init(t_sim *sim, char **argv)
 	sim->start_time = get_current_time();
 	sim->stop = false;
 	sim->number_of_compiles = 0;
+	if (strcmp(argv[8], "fifo") == 0)
+		sim->dongle_schedule = 0;
+	else if (strcmp(argv[8], "edf") == 0)
+		sim->dongle_schedule = 1;
+	else
+	{
+		fprintf(stderr, "Invalid scheduler: %s\n", argv[8]);
+		exit(EXIT_FAILURE);
+	}
 	pthread_mutex_init(&sim->stop_mutex, NULL);
 	pthread_mutex_init(&sim->print_mutex, NULL);
 	pthread_mutex_init(&sim->compile_mutex, NULL);
@@ -47,18 +56,9 @@ void	coders_init(t_sim *sim)
 
 void	dongle_init(t_dongle *dongle)
 {
-	t_heapq	*waiting_q;
-
-	waiting_q = malloc(sizeof(t_heapq) * 2);
-	if (!waiting_q)
-	{
-		printf("Error while creating dongles\n");
-		exit(EXIT_FAILURE);
-	}
 	pthread_cond_init(&dongle->cond, NULL);
 	pthread_mutex_init(&dongle->mutex, NULL);
 	dongle->available = true;
-	dongle->schedule = waiting_q;
 }
 
 void	dongles_init(t_sim *sim)

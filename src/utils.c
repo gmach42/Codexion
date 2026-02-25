@@ -22,12 +22,12 @@ size_t	get_current_time(void)
 	return (time.tv_sec * 1000 + time.tv_usec / 1000);
 }
 
-bool	is_burned(t_sim *sim)
-{
-	return (time_since_start(sim) > sim->time_to_burnout);
-}
+// bool	is_burned(t_sim *sim)
+// {
+// 	return (time_since_start(sim) > sim->time_to_burnout);
+// }
 
-bool	has_compiled_enough(t_sim *sim)
-{
-	return (sim->number_of_compiles >= sim->number_of_compiles_required);
-}
+// bool	has_compiled_enough(t_sim *sim)
+// {
+// 	return (sim->number_of_compiles >= sim->number_of_compiles_required);
+// }
