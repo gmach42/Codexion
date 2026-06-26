@@ -6,7 +6,7 @@
 /*   By: gmach <gmach@student.42lyon.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 17:29:52 by gmach             #+#    #+#             */
-/*   Updated: 2026/02/25 17:33:24 by gmach            ###   ########lyon.fr   */
+/*   Updated: 2026/06/26 14:16:32 by gmach            ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,9 +28,9 @@
 // 	printf("start time: %d\n\n", sim->start_time);
 // }
 
-bool	sim_stop_getter(t_sim *sim)
+bool sim_stop_getter(t_sim *sim)
 {
-	bool	stopped;
+	bool stopped;
 
 	pthread_mutex_lock(&sim->stop_mutex);
 	stopped = sim->stop;
@@ -38,27 +38,37 @@ bool	sim_stop_getter(t_sim *sim)
 	return (stopped);
 }
 
-void	safe_print(t_sim *sim, int id, char *msg)
+void safe_print(t_sim *sim, int id, char *msg)
 {
 	pthread_mutex_lock(&sim->print_mutex);
 	if (!sim_stop_getter(sim))
 		printf("%zu %d %s\n",
-			get_current_time() - sim->start_time,
-			id,
-			msg);
+			   get_current_time() - sim->start_time,
+			   id,
+			   msg);
 	pthread_mutex_unlock(&sim->print_mutex);
 }
 
-void	sim_stop_setter(t_sim *sim)
+void sim_stop_setter(t_sim *sim)
 {
+	int i;
+
 	pthread_mutex_lock(&sim->stop_mutex);
 	sim->stop = true;
 	pthread_mutex_unlock(&sim->stop_mutex);
+	i = 0;
+	while (i < sim->number_of_coders)
+	{
+		pthread_mutex_lock(&sim->dongles[i].mutex);
+		pthread_cond_broadcast(&sim->dongles[i].cond);
+		pthread_mutex_unlock(&sim->dongles[i].mutex);
+		i++;
+	}
 }
 
-void	clean_up(t_sim *sim)
+void clean_up(t_sim *sim)
 {
-	int	i;
+	int i;
 
 	pthread_mutex_destroy(&sim->stop_mutex);
 	pthread_mutex_destroy(&sim->print_mutex);
@@ -70,17 +80,18 @@ void	clean_up(t_sim *sim)
 	{
 		pthread_cond_destroy(&sim->dongles[i].cond);
 		pthread_mutex_destroy(&sim->dongles[i].mutex);
+		free(sim->dongles[i].queue.nodes);
 		i++;
 	}
 	free(sim->coders);
 	free(sim->dongles);
 }
 
-int	main(int argc, char **argv)
+int main(int argc, char **argv)
 {
-	t_sim		sim;
-	pthread_t	monitor_thread;
-	int			i;
+	t_sim sim;
+	pthread_t monitor_thread;
+	int i;
 
 	if (argc != 9)
 	{

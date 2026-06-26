@@ -16,6 +16,7 @@ SRCS := $(addprefix $(SRC_DIR)/, \
 	codexion.c\
 	coder.c\
 	dongle.c\
+	heapq.c\
 	monitor.c\
 	parsing.c\
 	utils.c\
@@ -58,6 +59,8 @@ clean:
 
 fclean: clean
 	$(RM) $(NAME)
+
+re: fclean all
 
 re: fclean all
 

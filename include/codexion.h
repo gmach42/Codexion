@@ -6,39 +6,39 @@
 /*   By: gmach <gmach@student.42lyon.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 17:30:08 by gmach             #+#    #+#             */
-/*   Updated: 2026/02/25 17:51:38 by gmach            ###   ########lyon.fr   */
+/*   Updated: 2026/06/26 14:16:36 by gmach            ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef CODEXION_H
-# define CODEXION_H
+#define CODEXION_H
 
-# include <unistd.h>	  // usleep, write
-# include <stdio.h>	  // printf, fprintf
-# include <pthread.h>  // pthread functions
-# include <sys/time.h> // gettimeofday
-# include <stdlib.h>	  // malloc, free, atoi
-# include <string.h>	  // memset
-# include <limits.h>	  // INT_MAX, INT_MIN
-# include <stdbool.h>  // bool, true, false
+#include <unistd.h>	  // usleep, write
+#include <stdio.h>	  // printf, fprintf
+#include <pthread.h>  // pthread functions
+#include <sys/time.h> // gettimeofday
+#include <stdlib.h>	  // malloc, free, atoi
+#include <string.h>	  // memset
+#include <limits.h>	  // INT_MAX, INT_MIN
+#include <stdbool.h>  // bool, true, false
 
 // Alias for timeval and timespec
-typedef struct timeval	t_timeval;
-typedef struct timespec	t_timespec;
-typedef pthread_mutex_t	t_mutex;
-typedef pthread_cond_t	t_cond;
+typedef struct timeval t_timeval;
+typedef struct timespec t_timespec;
+typedef pthread_mutex_t t_mutex;
+typedef pthread_cond_t t_cond;
 
-typedef struct s_sim	t_sim;
-typedef struct s_coder	t_coder;
-typedef struct s_dongle	t_dongle;
+typedef struct s_sim t_sim;
+typedef struct s_coder t_coder;
+typedef struct s_dongle t_dongle;
 
-# define GREEN "\033[0;32m"
-# define BLUE "\033[0;36m"
-# define YELLOW "\033[0;33m"
-# define RED "\033[1;31m"
-# define CYAN "\033[0;35m"
-# define FLASH "\033[1;93m"
-# define NC "\033[0m"
+#define GREEN "\033[0;32m"
+#define BLUE "\033[0;36m"
+#define YELLOW "\033[0;33m"
+#define RED "\033[1;31m"
+#define CYAN "\033[0;35m"
+#define FLASH "\033[1;93m"
+#define NC "\033[0m"
 
 enum
 {
@@ -48,6 +48,38 @@ enum
 	REFACTOR = 4,
 	BURNOUT = 8,
 };
+
+/**
+ *	@file	heapq.c
+ *	@brief	Node stored in a dongle's priority queue
+ *
+ *	@param	priority	Lower value = higher priority.
+ *						FIFO: arrival timestamp (ms).
+ *						EDF : last_compile_start + time_to_burnout (ms).
+ *	@param	tiebreak	Arrival timestamp (ms), secondary sort key.
+ *	@param	coder_id	ID of the requesting coder.
+ */
+typedef struct s_heap_node
+{
+	size_t priority;
+	size_t tiebreak;
+	int coder_id;
+} t_heap_node;
+
+/**
+ *	@file	heapq.c
+ *	@brief	Min-heap (priority queue) used per dongle to order waiters
+ *
+ *	@param	nodes		Dynamically allocated array of heap nodes.
+ *	@param	size		Number of elements currently in the heap.
+ *	@param	capacity	Maximum number of elements (= number_of_coders).
+ */
+typedef struct s_heap
+{
+	t_heap_node *nodes;
+	int size;
+	int capacity;
+} t_heap;
 
 /**
  *	@file 	dongle.c
@@ -60,14 +92,15 @@ enum
  * @param	mutex		Lock a dongle when it's used
  * @param	cond		Condition to lock the dongle (cooldown)
  * @param	available	true if available else false
- * @param	cooldown	Timestamp in ms of the cooldown
+ * @param	queue		Priority queue of coders waiting for this dongle
  */
 typedef struct s_dongle
 {
-	t_mutex	mutex; /**< Protects access to dongle state */
-	t_cond	cond; /**< Signal waiting coders */
-	bool	available; /**< Boolean indicating if the dongle is available */
-}	t_dongle;
+	t_mutex mutex;	/**< Protects access to dongle state */
+	t_cond cond;	/**< Signal waiting coders */
+	bool available; /**< Boolean indicating if the dongle is available */
+	t_heap queue;	/**< Priority queue of waiting coders */
+} t_dongle;
 
 /**
  *	@file 	coder.c
@@ -80,60 +113,64 @@ typedef struct s_dongle
  */
 typedef struct s_coder
 {
-	int			id;
+	int id;
 
-	size_t		last_compile_time;
-	t_mutex		time_mutex;
+	size_t last_compile_time;
+	t_mutex time_mutex;
 
-	pthread_t	thread;
-	t_sim		*sim;
+	pthread_t thread;
+	t_sim *sim;
 
-	t_dongle	*left; /**< Pointer to the left dongle */
-	t_dongle	*right; /**< Pointer to the right dongle */
-}	t_coder;
+	t_dongle *left;	 /**< Pointer to the left dongle */
+	t_dongle *right; /**< Pointer to the right dongle */
+} t_coder;
 
 typedef struct s_sim
 {
-	t_coder		*coders;
-	t_dongle	*dongles;
+	t_coder *coders;
+	t_dongle *dongles;
 
-	pthread_t	monitor;
-	t_mutex		stop_mutex;
-	t_mutex		print_mutex;
-	t_mutex		compile_mutex;
-	bool		stop;
-	int			dongle_schedule;
+	pthread_t monitor;
+	t_mutex stop_mutex;
+	t_mutex print_mutex;
+	t_mutex compile_mutex;
+	bool stop;
+	int dongle_schedule;
 
-	int			number_of_coders;
-	int			number_of_compiles;
-	int			number_of_compiles_required;
+	int number_of_coders;
+	int number_of_compiles;
+	int number_of_compiles_required;
 
-	size_t		time_to_burnout;
-	size_t		time_to_debug;
-	size_t		time_to_compile;
-	size_t		time_to_refactor;
-	size_t		dongle_cooldown;
-	size_t		start_time;
+	size_t time_to_burnout;
+	size_t time_to_debug;
+	size_t time_to_compile;
+	size_t time_to_refactor;
+	size_t dongle_cooldown;
+	size_t start_time;
 
-}	t_sim;
+} t_sim;
 
-bool	compile(t_sim *sim, t_coder *coder);
-bool	debug(t_sim *sim, t_coder *coder);
-bool	refactor(t_sim *sim, t_coder *coder);
-void	*routine(void *arg);
-void	safe_print(t_sim *sim, int id, char *msg);
-void	sim_stop_setter(t_sim *sim);
-bool	sim_stop_getter(t_sim *sim);
+bool compile(t_sim *sim, t_coder *coder);
+bool debug(t_sim *sim, t_coder *coder);
+bool refactor(t_sim *sim, t_coder *coder);
+void *routine(void *arg);
+void safe_print(t_sim *sim, int id, char *msg);
+void sim_stop_setter(t_sim *sim);
+bool sim_stop_getter(t_sim *sim);
 
-bool	dongle_take(t_sim *sim, t_dongle *dongle, t_coder *coder);
-void	dongle_release(t_sim *sim, t_dongle *dongle);
+bool dongle_take(t_sim *sim, t_dongle *dongle, t_coder *coder);
+void dongle_release(t_sim *sim, t_dongle *dongle);
 
-void	simulation_init(t_sim *sim, char **argv);
-void	coders_init(t_sim *sim);
-void	dongles_init(t_sim *sim);
-void	*monitor_routine(void *arg);
+void heap_push(t_heap *heap, t_heap_node node);
+t_heap_node heap_pop(t_heap *heap);
+bool heap_top_is(t_heap *heap, int coder_id);
 
-size_t	time_since_start(t_sim *sim);
-size_t	get_current_time(void);
+void simulation_init(t_sim *sim, char **argv);
+void coders_init(t_sim *sim);
+void dongles_init(t_sim *sim);
+void *monitor_routine(void *arg);
+
+size_t time_since_start(t_sim *sim);
+size_t get_current_time(void);
 
 #endif

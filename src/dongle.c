@@ -6,48 +6,75 @@
 /*   By: gmach <gmach@student.42lyon.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/23 13:04:03 by gmach             #+#    #+#             */
-/*   Updated: 2026/02/25 17:29:49 by gmach            ###   ########lyon.fr   */
+/*   Updated: 2026/06/26 14:16:46 by gmach            ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "codexion.h"
 
-t_timespec	deadline_calculation(size_t last_compile_time, size_t time_to_burnout)
+/**
+ * @brief Build a heap node for `coder` requesting `dongle`.
+ *        FIFO: priority = arrival timestamp (ms).
+ *        EDF : priority = last_compile_start + time_to_burnout (ms),
+ *              tiebreak = arrival timestamp.
+ */
+static t_heap_node build_node(t_sim *sim, t_coder *coder)
 {
-	t_timespec	deadline;
-	size_t		deadline_ms;
+	t_heap_node node;
 
-	deadline_ms = last_compile_time + time_to_burnout;
-	deadline.tv_sec = deadline_ms / 1000;
-	deadline.tv_nsec = (deadline_ms % 1000) * 1000000;
-	return (deadline);
+	node.coder_id = coder->id;
+	node.tiebreak = get_current_time();
+	if (sim->dongle_schedule == 0)
+		node.priority = node.tiebreak;
+	else
+	{
+		pthread_mutex_lock(&coder->time_mutex);
+		node.priority = coder->last_compile_time + sim->time_to_burnout;
+		pthread_mutex_unlock(&coder->time_mutex);
+	}
+	return (node);
 }
 
-bool	dongle_take(t_sim *sim, t_dongle *dongle, t_coder *coder)
+/**
+ * @brief Try to acquire `dongle` on behalf of `coder`.
+ *
+ *        The coder's request is pushed onto the dongle's min-heap so that
+ *        the scheduler (FIFO or EDF) grants access in the correct order.
+ *        The calling thread sleeps on the dongle's condition variable and
+ *        only takes the dongle when:
+ *          - it is at the head of the priority queue, AND
+ *          - the dongle is not in its cooldown period.
+ *
+ * @return true  on success (dongle taken).
+ * @return false if the simulation stopped before the dongle was acquired.
+ */
+bool dongle_take(t_sim *sim, t_dongle *dongle, t_coder *coder)
 {
-	t_timespec	deadline;
+	t_heap_node node;
 
 	if (sim_stop_getter(sim))
 		return (false);
-	deadline = deadline_calculation(coder->last_compile_time, sim->time_to_burnout);
+	node = build_node(sim, coder);
 	pthread_mutex_lock(&dongle->mutex);
-	while (!dongle->available)
+	heap_push(&dongle->queue, node);
+	while (!sim_stop_getter(sim) && !(dongle->available && heap_top_is(&dongle->queue, coder->id)))
+		pthread_cond_wait(&dongle->cond, &dongle->mutex);
+	if (sim_stop_getter(sim))
 	{
-		if (sim->dongle_schedule == 0)
-			pthread_cond_wait(&dongle->cond, &dongle->mutex);
-		else
-			pthread_cond_timedwait(&dongle->cond, &dongle->mutex, &deadline);
+		pthread_mutex_unlock(&dongle->mutex);
+		return (false);
 	}
+	heap_pop(&dongle->queue);
 	dongle->available = false;
 	safe_print(sim, coder->id, "has taken a dongle");
 	pthread_mutex_unlock(&dongle->mutex);
 	return (true);
 }
 
-void	dongle_release(t_sim *sim, t_dongle *dongle)
+void dongle_release(t_sim *sim, t_dongle *dongle)
 {
-	t_timeval	now;
-	t_timespec	timeout;
+	t_timeval now;
+	t_timespec timeout;
 
 	gettimeofday(&now, NULL);
 	timeout.tv_sec = now.tv_sec + sim->dongle_cooldown / 1000;
