@@ -116,6 +116,7 @@ typedef struct s_coder
 	int id;
 
 	size_t last_compile_time;
+	int compile_count;
 	t_mutex time_mutex;
 
 	pthread_t thread;
@@ -133,12 +134,10 @@ typedef struct s_sim
 	pthread_t monitor;
 	t_mutex stop_mutex;
 	t_mutex print_mutex;
-	t_mutex compile_mutex;
 	bool stop;
 	int dongle_schedule;
 
 	int number_of_coders;
-	int number_of_compiles;
 	int number_of_compiles_required;
 
 	size_t time_to_burnout;
@@ -172,5 +171,8 @@ void *monitor_routine(void *arg);
 
 size_t time_since_start(t_sim *sim);
 size_t get_current_time(void);
+
+int parse_int(char *str);
+int parse_str(char *str);
 
 #endif

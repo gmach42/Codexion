@@ -26,19 +26,34 @@
  * - scheduler (char *) 'fifo' or 'edf'
  */
 
-// TODO Check if no negative and types as well if scheduler is fifo or edf
+/**
+ * @brief Return true iff `str` is a non-empty sequence of decimal digits.
+ *        Rejects negative numbers, floats, hex, and any other malformed input.
+ */
+static bool	is_valid_uint(const char *str)
+{
+	int	i;
+
+	if (!str || str[0] == '\0')
+		return (false);
+	i = 0;
+	while (str[i])
+	{
+		if (str[i] < '0' || str[i] > '9')
+			return (false);
+		i++;
+	}
+	return (true);
+}
 
 int	parse_int(char *str)
 {
-	int	result;
-
-	result = atoi(str);
-	if (result < 0)
+	if (!is_valid_uint(str))
 	{
 		fprintf(stderr, "Invalid argument: %s\n", str);
 		exit(EXIT_FAILURE);
 	}
-	return (result);
+	return (atoi(str));
 }
 
 int	parse_str(char *str)

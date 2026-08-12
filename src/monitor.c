@@ -28,15 +28,24 @@ bool	burnout(t_sim *sim, t_coder *coder, size_t last_compile_time)
 
 bool	complete(t_sim *sim)
 {
+	int	i;
+	int	count;
+
 	if (sim_stop_getter(sim))
 		return (false);
-	if (sim->number_of_compiles >= sim->number_of_compiles_required)
+	i = 0;
+	while (i < sim->number_of_coders)
 	{
-		printf("%zu Simulation Complete\n", get_current_time() - sim->start_time);
-		sim_stop_setter(sim);
-		return (true);
+		pthread_mutex_lock(&sim->coders[i].time_mutex);
+		count = sim->coders[i].compile_count;
+		pthread_mutex_unlock(&sim->coders[i].time_mutex);
+		if (count < sim->number_of_compiles_required)
+			return (false);
+		i++;
 	}
-	return (false);
+	printf("%zu Simulation Complete\n", get_current_time() - sim->start_time);
+	sim_stop_setter(sim);
+	return (true);
 }
 
 void	*monitor_routine(void *arg)
@@ -48,6 +57,8 @@ void	*monitor_routine(void *arg)
 	sim = (t_sim *)arg;
 	while (!sim_stop_getter(sim))
 	{
+		if (complete(sim))
+			return (NULL);
 		i = 0;
 		while (i < sim->number_of_coders)
 		{
@@ -55,8 +66,6 @@ void	*monitor_routine(void *arg)
 			last = sim->coders[i].last_compile_time;
 			pthread_mutex_unlock(&sim->coders[i].time_mutex);
 			if (burnout(sim, &sim->coders[i], last))
-				return (NULL);
-			if (complete(sim))
 				return (NULL);
 			i++;
 		}

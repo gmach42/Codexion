@@ -62,23 +62,35 @@ void	*routine(void *arg)
 	t_coder	*coder;
 
 	coder = (t_coder *)arg;
-	if (coder->id % 2 != 0)
-		usleep(1000);
 	while (!sim_stop_getter(coder->sim))
 	{
-		if (!dongle_take(coder->sim, coder->left, coder))
-			break ;
-		if (!dongle_take(coder->sim, coder->right, coder))
-			break ;
+		/* Always request dongles in a fixed global order (lowest memory
+		 * address first). This total ordering breaks the circular wait
+		 * (Coffman condition) that would otherwise deadlock the ring
+		 * if every coder grabbed left then right in lock-step. */
+		if (coder->left < coder->right)
+		{
+			if (!dongle_take(coder->sim, coder->left, coder))
+				break ;
+			if (!dongle_take(coder->sim, coder->right, coder))
+				break ;
+		}
+		else
+		{
+			if (!dongle_take(coder->sim, coder->right, coder))
+				break ;
+			if (!dongle_take(coder->sim, coder->left, coder))
+				break ;
+		}
 		if (!compile(coder->sim, coder))
 			break ;
 		if (!debug(coder->sim, coder))
 			break ;
 		if (!refactor(coder->sim, coder))
 			break ;
-		pthread_mutex_lock(&coder->sim->compile_mutex);
-		coder->sim->number_of_compiles++;
-		pthread_mutex_unlock(&coder->sim->compile_mutex);
+		pthread_mutex_lock(&coder->time_mutex);
+		coder->compile_count++;
+		pthread_mutex_unlock(&coder->time_mutex);
 		if (sim_stop_getter(coder->sim))
 			break ;
 	}

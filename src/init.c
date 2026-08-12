@@ -14,28 +14,23 @@
 
 void simulation_init(t_sim *sim, char **argv)
 {
-	sim->number_of_coders = atoi(argv[1]);
-	sim->time_to_burnout = atoi(argv[2]);
-	sim->time_to_compile = atoi(argv[3]);
-	sim->time_to_debug = atoi(argv[4]);
-	sim->time_to_refactor = atoi(argv[5]);
-	sim->number_of_compiles_required = atoi(argv[6]);
-	sim->dongle_cooldown = atoi(argv[7]);
-	sim->start_time = get_current_time();
-	sim->stop = false;
-	sim->number_of_compiles = 0;
-	if (strcmp(argv[8], "fifo") == 0)
-		sim->dongle_schedule = 0;
-	else if (strcmp(argv[8], "edf") == 0)
-		sim->dongle_schedule = 1;
-	else
+	sim->number_of_coders = parse_int(argv[1]);
+	if (sim->number_of_coders < 1)
 	{
-		fprintf(stderr, "Invalid scheduler: %s\n", argv[8]);
+		fprintf(stderr, "Invalid argument: number_of_coders must be >= 1\n");
 		exit(EXIT_FAILURE);
 	}
+	sim->time_to_burnout = parse_int(argv[2]);
+	sim->time_to_compile = parse_int(argv[3]);
+	sim->time_to_debug = parse_int(argv[4]);
+	sim->time_to_refactor = parse_int(argv[5]);
+	sim->number_of_compiles_required = parse_int(argv[6]);
+	sim->dongle_cooldown = parse_int(argv[7]);
+	sim->dongle_schedule = parse_str(argv[8]);
+	sim->start_time = get_current_time();
+	sim->stop = false;
 	pthread_mutex_init(&sim->stop_mutex, NULL);
 	pthread_mutex_init(&sim->print_mutex, NULL);
-	pthread_mutex_init(&sim->compile_mutex, NULL);
 }
 
 void coder_init(t_sim *sim, t_coder *coder, int id, t_dongle *left, t_dongle *right)
@@ -45,6 +40,7 @@ void coder_init(t_sim *sim, t_coder *coder, int id, t_dongle *left, t_dongle *ri
 	coder->right = right;
 	coder->sim = sim;
 	coder->last_compile_time = sim->start_time;
+	coder->compile_count = 0;
 	pthread_mutex_init(&coder->time_mutex, NULL);
 }
 
@@ -59,7 +55,7 @@ void coders_init(t_sim *sim)
 		return;
 	while (i < sim->number_of_coders)
 	{
-		coder_init(sim, &coders[i], i, &sim->dongles[i], &sim->dongles[(i + 1) % sim->number_of_coders]);
+		coder_init(sim, &coders[i], i + 1, &sim->dongles[i], &sim->dongles[(i + 1) % sim->number_of_coders]);
 		coders[i++].sim = sim;
 	}
 	sim->coders = coders;
