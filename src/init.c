@@ -6,7 +6,7 @@
 /*   By: gmach <gmach@student.42lyon.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 17:30:13 by gmach             #+#    #+#             */
-/*   Updated: 2026/08/14 14:23:57 by gmach            ###   ########lyon.fr   */
+/*   Updated: 2026/08/14 15:45:01 by gmach            ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,6 +67,7 @@ bool	dongle_init(t_dongle *dongle, int capacity)
 	pthread_cond_init(&dongle->cond, NULL);
 	pthread_mutex_init(&dongle->mutex, NULL);
 	dongle->available = true;
+	dongle->cooldown = 0;
 	dongle->queue.nodes = malloc(sizeof(t_hnode) * capacity);
 	if (!dongle->queue.nodes)
 		return (false);

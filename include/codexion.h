@@ -6,7 +6,7 @@
 /*   By: gmach <gmach@student.42lyon.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 17:30:08 by gmach             #+#    #+#             */
-/*   Updated: 2026/08/14 14:23:55 by gmach            ###   ########lyon.fr   */
+/*   Updated: 2026/08/14 15:43:13 by gmach            ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,7 +85,7 @@ typedef struct s_heap
  *	@file 	dongle.c
  *	@brief	Represent a shared USB dongle
  *
- *	One dongle at the left and right of each coders whose are sitted in cirlcle
+ *	One dongle at the left and right of each coders whose are sitted in circle
  *	If only one coder is present, only one dongle will be available
  *	Dongle's priority is managed by a heapq schedule (FIFO or EDF)
  *
@@ -99,6 +99,7 @@ typedef struct s_dongle
 	t_mutex	mutex;	/**< Protects access to dongle state */
 	t_cond	cond;	/**< Signal waiting coders */
 	bool	available; /**< Boolean indicating if the dongle is available */
+	size_t	cooldown; /**< Timestamp when the dongle will be available again */
 	t_heap	queue;	/**< Priority queue of waiting coders */
 }	t_dongle;
 

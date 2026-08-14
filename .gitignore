@@ -2,3 +2,5 @@
 **.o
 **.d
 codexion
+.build/
+.test/

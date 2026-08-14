@@ -6,7 +6,7 @@
 /*   By: gmach <gmach@student.42lyon.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/23 13:04:03 by gmach             #+#    #+#             */
-/*   Updated: 2026/08/14 14:23:57 by gmach            ###   ########lyon.fr   */
+/*   Updated: 2026/08/14 16:01:22 by gmach            ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,24 @@ static t_hnode	build_node(t_sim *sim, t_coder *coder)
 	return (node);
 }
 
+static void	dongle_wait(t_sim *sim, t_dongle *dongle, t_coder *coder)
+{
+	t_timespec	timeout;
+
+	while (!sim_stop_getter(sim)
+		&& !(dongle->available && heap_top_is(&dongle->queue, coder->id)))
+	{
+		if (dongle->available && get_current_time() < dongle->cooldown)
+		{
+			timeout.tv_sec = dongle->cooldown / 1000;
+			timeout.tv_nsec = (dongle->cooldown % 1000) * 1000000;
+			pthread_cond_timedwait(&dongle->cond, &dongle->mutex, &timeout);
+		}
+		else
+			pthread_cond_wait(&dongle->cond, &dongle->mutex);
+	}
+}
+
 /**
  * @brief Try to acquire `dongle` for a `coder`.
  *        Only takes the dongle when:
@@ -53,9 +71,7 @@ bool	dongle_take(t_sim *sim, t_dongle *dongle, t_coder *coder)
 	node = build_node(sim, coder);
 	pthread_mutex_lock(&dongle->mutex);
 	heap_push(&dongle->queue, node);
-	while (!sim_stop_getter(sim)
-		&& !(dongle->available && heap_top_is(&dongle->queue, coder->id)))
-		pthread_cond_wait(&dongle->cond, &dongle->mutex);
+	dongle_wait(sim, dongle, coder);
 	if (sim_stop_getter(sim))
 	{
 		pthread_mutex_unlock(&dongle->mutex);
@@ -70,21 +86,9 @@ bool	dongle_take(t_sim *sim, t_dongle *dongle, t_coder *coder)
 
 void	dongle_release(t_sim *sim, t_dongle *dongle)
 {
-	t_timeval	now;
-	t_timespec	timeout;
-
-	gettimeofday(&now, NULL);
-	timeout.tv_sec = now.tv_sec + sim->dongle_cd / 1000;
-	timeout.tv_nsec = (now.tv_usec * 1000) + (sim->dongle_cd % 1000) * 1000000;
-	if (timeout.tv_nsec >= 1000000000)
-	{
-		timeout.tv_sec++;
-		timeout.tv_nsec -= 1000000000;
-	}
 	pthread_mutex_lock(&dongle->mutex);
-	dongle->available = false;
-	pthread_cond_timedwait(&dongle->cond, &dongle->mutex, &timeout);
 	dongle->available = true;
+	dongle->cooldown = get_current_time() + sim->dongle_cd;
 	pthread_cond_broadcast(&dongle->cond);
 	pthread_mutex_unlock(&dongle->mutex);
 }
