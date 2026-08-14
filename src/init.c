@@ -6,7 +6,7 @@
 /*   By: gmach <gmach@student.42lyon.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 17:30:13 by gmach             #+#    #+#             */
-/*   Updated: 2026/08/14 17:38:05 by gmach            ###   ########lyon.fr   */
+/*   Updated: 2026/08/14 20:02:55 by gmach            ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ void	simulation_init(t_sim *sim, char **argv)
 	pthread_mutex_init(&sim->print_mutex, NULL);
 }
 
-void	coder_init(t_sim *sim, t_coder *coder, int id, t_dongle *dongles)
+static void	coder_init(t_sim *sim, t_coder *coder, int id, t_dongle *dongles)
 {
 	coder->id = id;
 	coder->left = &dongles[id - 1];
@@ -62,7 +62,7 @@ bool	coders_init(t_sim *sim)
 	return (true);
 }
 
-bool	dongle_init(t_dongle *dongle, int capacity)
+static bool	dongle_init(t_dongle *dongle, int capacity)
 {
 	pthread_cond_init(&dongle->cond, NULL);
 	pthread_mutex_init(&dongle->mutex, NULL);

@@ -6,7 +6,7 @@
 /*   By: gmach <gmach@student.42lyon.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 17:29:52 by gmach             #+#    #+#             */
-/*   Updated: 2026/08/14 17:38:05 by gmach            ###   ########lyon.fr   */
+/*   Updated: 2026/08/14 20:02:56 by gmach            ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ void	safe_print(t_sim *sim, int id, char *msg)
 	pthread_mutex_unlock(&sim->print_mutex);
 }
 
-void	clean_up(t_sim *sim)
+static void	clean_up(t_sim *sim)
 {
 	int	i;
 

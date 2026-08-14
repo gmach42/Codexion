@@ -6,7 +6,7 @@
 /*   By: gmach <gmach@student.42lyon.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 17:30:08 by gmach             #+#    #+#             */
-/*   Updated: 2026/08/14 17:38:05 by gmach            ###   ########lyon.fr   */
+/*   Updated: 2026/08/14 20:02:57 by gmach            ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,12 +18,10 @@
 # include <pthread.h>  // pthread functions
 # include <sys/time.h> // gettimeofday
 # include <stdlib.h>	  // malloc, free, atoi
-# include <string.h>	  // memset
-# include <limits.h>	  // INT_MAX, INT_MIN
+# include <string.h>	  // strcmp
 # include <stdbool.h>  // bool, true, false
 
-// Alias for timeval and timespec
-typedef struct timeval	t_timeval;
+// Alias for timespec
 typedef struct timespec	t_timespec;
 typedef pthread_mutex_t	t_mutex;
 typedef pthread_cond_t	t_cond;
@@ -39,15 +37,6 @@ typedef struct s_dongle	t_dongle;
 # define CYAN "\033[0;35m"
 # define FLASH "\033[1;93m"
 # define NC "\033[0m"
-
-enum
-{
-	DONGLE = 0,
-	COMPILE = 1,
-	DEBUG = 2,
-	REFACTOR = 4,
-	BURNOUT = 8,
-};
 
 /**
  *	@file	heapq.c
@@ -132,7 +121,6 @@ typedef struct s_sim
 	t_coder		*coders;
 	t_dongle	*dongles;
 
-	pthread_t	monitor;
 	t_mutex		stop_mutex;
 	t_mutex		print_mutex;
 	bool		stop;
@@ -173,7 +161,6 @@ void	*monitor_routine(void *arg);
 void	launch_coders(t_sim *sim);
 void	join_coders(t_sim *sim, pthread_t monitor_thread);
 
-size_t	time_since_start(t_sim *sim);
 size_t	get_current_time(void);
 void	better_sleep(t_sim *sim, size_t duration_ms);
 

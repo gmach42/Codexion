@@ -6,7 +6,7 @@
 /*   By: gmach <gmach@student.42lyon.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/26 00:00:00 by gmach             #+#    #+#             */
-/*   Updated: 2026/08/14 10:45:38 by gmach            ###   ########lyon.fr   */
+/*   Updated: 2026/08/14 20:04:00 by gmach            ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,10 +47,6 @@ static int	heap_cmp(const t_hnode *a, const t_hnode *b)
 	return (1);
 }
 
-/**
- * @brief Insert `node` into the min-heap and shift it up.
- *        Does not proceed if the heap is already at max capacity.
- */
 void	heap_push(t_heap *heap, t_hnode node)
 {
 	int	i;
@@ -70,10 +66,6 @@ void	heap_push(t_heap *heap, t_hnode node)
 	}
 }
 
-/**
- * @brief Remove and return the minimum node, then shift the replacement down.
- *        Caller must ensure heap->size > 0.
- */
 t_hnode	heap_pop(t_heap *heap)
 {
 	t_hnode	top;
@@ -99,10 +91,6 @@ t_hnode	heap_pop(t_heap *heap)
 	return (top);
 }
 
-/**
- * @brief Return true if the heap is non-empty and its minimum node
- *        belongs to `coder_id`.
- */
 bool	heap_top_is(t_heap *heap, int coder_id)
 {
 	return (heap->size > 0 && heap->nodes[0].coder_id == coder_id);

@@ -6,7 +6,7 @@
 /*   By: gmach <gmach@student.42lyon.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 17:30:30 by gmach             #+#    #+#             */
-/*   Updated: 2026/08/14 14:06:25 by gmach            ###   ########lyon.fr   */
+/*   Updated: 2026/08/14 20:02:56 by gmach            ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ void	sim_stop_setter(t_sim *sim)
 	}
 }
 
-bool	burnout(t_sim *sim, t_coder *coder, size_t last_compile_time)
+static bool	burnout(t_sim *sim, t_coder *coder, size_t last_compile_time)
 {
 	if (sim_stop_getter(sim))
 		return (false);
@@ -42,7 +42,7 @@ bool	burnout(t_sim *sim, t_coder *coder, size_t last_compile_time)
 	return (false);
 }
 
-bool	complete(t_sim *sim)
+static bool	complete(t_sim *sim)
 {
 	int	i;
 	int	count;
