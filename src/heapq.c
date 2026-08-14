@@ -6,15 +6,15 @@
 /*   By: gmach <gmach@student.42lyon.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/26 00:00:00 by gmach             #+#    #+#             */
-/*   Updated: 2026/08/14 10:16:26 by gmach            ###   ########lyon.fr   */
+/*   Updated: 2026/08/14 10:45:38 by gmach            ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "codexion.h"
 
-static void heap_swap(t_hnode *a, t_hnode *b)
+static void	heap_swap(t_hnode *a, t_hnode *b)
 {
-	t_hnode tmp;
+	t_hnode	tmp;
 
 	tmp = *a;
 	*a = *b;
@@ -28,7 +28,7 @@ static void heap_swap(t_hnode *a, t_hnode *b)
  *		Secondary key: tiebreak (arrival time, lower = earlier).
  *		Tertiary key : coder_id (lower = higher priority).
  */
-static int heap_cmp(const t_hnode *a, const t_hnode *b)
+static int	heap_cmp(const t_hnode *a, const t_hnode *b)
 {
 	if (a->priority != b->priority)
 	{
@@ -51,20 +51,20 @@ static int heap_cmp(const t_hnode *a, const t_hnode *b)
  * @brief Insert `node` into the min-heap and shift it up.
  *        Does not proceed if the heap is already at max capacity.
  */
-void heap_push(t_heap *heap, t_hnode node)
+void	heap_push(t_heap *heap, t_hnode node)
 {
-	int i;
-	int parent;
+	int	i;
+	int	parent;
 
 	if (heap->size >= heap->capacity)
-		return;
+		return ;
 	heap->nodes[heap->size] = node;
 	i = heap->size++;
 	while (i > 0)
 	{
 		parent = (i - 1) / 2;
 		if (heap_cmp(&heap->nodes[i], &heap->nodes[parent]) >= 0)
-			break;
+			break ;
 		heap_swap(&heap->nodes[i], &heap->nodes[parent]);
 		i = parent;
 	}
@@ -74,11 +74,11 @@ void heap_push(t_heap *heap, t_hnode node)
  * @brief Remove and return the minimum node, then shift the replacement down.
  *        Caller must ensure heap->size > 0.
  */
-t_hnode heap_pop(t_heap *heap)
+t_hnode	heap_pop(t_heap *heap)
 {
-	t_hnode top;
-	int i;
-	int child;
+	t_hnode	top;
+	int		i;
+	int		child;
 
 	top = heap->nodes[0];
 	heap->nodes[0] = heap->nodes[--heap->size];
@@ -87,11 +87,12 @@ t_hnode heap_pop(t_heap *heap)
 	{
 		child = 2 * i + 1;
 		if (child >= heap->size)
-			break;
-		if (child + 1 < heap->size && heap_cmp(&heap->nodes[child + 1], &heap->nodes[child]) < 0)
+			break ;
+		if (child + 1 < heap->size
+			&& heap_cmp(&heap->nodes[child + 1], &heap->nodes[child]) < 0)
 			child++;
 		if (heap_cmp(&heap->nodes[i], &heap->nodes[child]) <= 0)
-			break;
+			break ;
 		heap_swap(&heap->nodes[i], &heap->nodes[child]);
 		i = child;
 	}
@@ -102,7 +103,7 @@ t_hnode heap_pop(t_heap *heap)
  * @brief Return true if the heap is non-empty and its minimum node
  *        belongs to `coder_id`.
  */
-bool heap_top_is(t_heap *heap, int coder_id)
+bool	heap_top_is(t_heap *heap, int coder_id)
 {
 	return (heap->size > 0 && heap->nodes[0].coder_id == coder_id);
 }

@@ -6,12 +6,11 @@
 /*   By: gmach <gmach@student.42lyon.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 17:30:30 by gmach             #+#    #+#             */
-/*   Updated: 2026/02/25 17:55:19 by gmach            ###   ########lyon.fr   */
+/*   Updated: 2026/08/14 10:27:19 by gmach            ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "codexion.h"
-
 
 bool	burnout(t_sim *sim, t_coder *coder, size_t last_compile_time)
 {
@@ -34,12 +33,12 @@ bool	complete(t_sim *sim)
 	if (sim_stop_getter(sim))
 		return (false);
 	i = 0;
-	while (i < sim->number_of_coders)
+	while (i < sim->nb_coders)
 	{
 		pthread_mutex_lock(&sim->coders[i].time_mutex);
 		count = sim->coders[i].compile_count;
 		pthread_mutex_unlock(&sim->coders[i].time_mutex);
-		if (count < sim->number_of_compiles_required)
+		if (count < sim->nb_compiles)
 			return (false);
 		i++;
 	}
@@ -60,7 +59,7 @@ void	*monitor_routine(void *arg)
 		if (complete(sim))
 			return (NULL);
 		i = 0;
-		while (i < sim->number_of_coders)
+		while (i < sim->nb_coders)
 		{
 			pthread_mutex_lock(&sim->coders[i].time_mutex);
 			last = sim->coders[i].last_compile_time;

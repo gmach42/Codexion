@@ -6,7 +6,7 @@
 /*   By: gmach <gmach@student.42lyon.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 17:29:58 by gmach             #+#    #+#             */
-/*   Updated: 2026/08/14 08:58:08 by gmach            ###   ########lyon.fr   */
+/*   Updated: 2026/08/14 11:59:40 by gmach            ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,6 +57,26 @@ bool	refactor(t_sim *sim, t_coder *coder)
 	return (true);
 }
 
+static bool	take_dongles(t_coder *coder)
+{
+	if (coder->left < coder->right)
+	{
+		if (!dongle_take(coder->sim, coder->left, coder))
+			return (false);
+		if (!dongle_take(coder->sim, coder->right, coder))
+			return (false);
+	}
+	else
+	{
+		if (!dongle_take(coder->sim, coder->right, coder))
+			return (false);
+		if (!dongle_take(coder->sim, coder->left, coder))
+			return (false);
+	}
+	return (true);
+}
+
+
 void	*routine(void *arg)
 {
 	t_coder	*coder;
@@ -64,22 +84,8 @@ void	*routine(void *arg)
 	coder = (t_coder *)arg;
 	while (!sim_stop_getter(coder->sim))
 	{
-		/* Always request dongles in a fixed global order (lowest memory
-		 * address first). */
-		if (coder->left < coder->right)
-		{
-			if (!dongle_take(coder->sim, coder->left, coder))
-				break ;
-			if (!dongle_take(coder->sim, coder->right, coder))
-				break ;
-		}
-		else
-		{
-			if (!dongle_take(coder->sim, coder->right, coder))
-				break ;
-			if (!dongle_take(coder->sim, coder->left, coder))
-				break ;
-		}
+		if (!take_dongles(coder))
+			break ;
 		if (!compile(coder->sim, coder))
 			break ;
 		if (!debug(coder->sim, coder))

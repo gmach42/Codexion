@@ -89,7 +89,7 @@ The `scheduler` argument selects the arbitration policy used when multiple coder
 ```
 ./codexion <number_of_coders> <time_to_burnout> <time_to_compile> \
            <time_to_debug> <time_to_refactor> <number_of_compiles_required> \
-           <dongle_cooldown> <scheduler>
+           <dongle_cd> <scheduler>
 ```
 
 | Argument | Unit | Description |
@@ -100,7 +100,7 @@ The `scheduler` argument selects the arbitration policy used when multiple coder
 | `time_to_debug` | ms | Duration of the debug phase (no dongles required). |
 | `time_to_refactor` | ms | Duration of the refactor phase. Once done, the coder immediately attempts to acquire dongles again. |
 | `number_of_compiles_required` | — | Simulation stops successfully when every coder has compiled at least this many times. |
-| `dongle_cooldown` | ms | After being released, a dongle is unavailable for this duration. |
+| `dongle_cd` | ms | After being released, a dongle is unavailable for this duration. |
 | `scheduler` | — | Dongle arbitration policy: `fifo` or `edf`. |
 
 ### Example

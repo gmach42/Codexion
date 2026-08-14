@@ -6,7 +6,7 @@
 /*   By: gmach <gmach@student.42lyon.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/23 13:04:03 by gmach             #+#    #+#             */
-/*   Updated: 2026/08/14 10:16:26 by gmach            ###   ########lyon.fr   */
+/*   Updated: 2026/08/14 10:45:12 by gmach            ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,9 +18,9 @@
  *        EDF : priority = last_compile_start + time_to_burnout (ms),
  *              tiebreak = arrival time.
  */
-static t_hnode build_node(t_sim *sim, t_coder *coder)
+static t_hnode	build_node(t_sim *sim, t_coder *coder)
 {
-	t_hnode node;
+	t_hnode	node;
 
 	node.coder_id = coder->id;
 	node.tiebreak = get_current_time();
@@ -44,16 +44,17 @@ static t_hnode build_node(t_sim *sim, t_coder *coder)
  * @return true  on success (dongle taken).
  * @return false if the simulation stopped before the dongle was acquired.
  */
-bool dongle_take(t_sim *sim, t_dongle *dongle, t_coder *coder)
+bool	dongle_take(t_sim *sim, t_dongle *dongle, t_coder *coder)
 {
-	t_hnode node;
+	t_hnode	node;
 
 	if (sim_stop_getter(sim))
 		return (false);
 	node = build_node(sim, coder);
 	pthread_mutex_lock(&dongle->mutex);
 	heap_push(&dongle->queue, node);
-	while (!sim_stop_getter(sim) && !(dongle->available && heap_top_is(&dongle->queue, coder->id)))
+	while (!sim_stop_getter(sim)
+		&& !(dongle->available && heap_top_is(&dongle->queue, coder->id)))
 		pthread_cond_wait(&dongle->cond, &dongle->mutex);
 	if (sim_stop_getter(sim))
 	{
@@ -67,14 +68,14 @@ bool dongle_take(t_sim *sim, t_dongle *dongle, t_coder *coder)
 	return (true);
 }
 
-void dongle_release(t_sim *sim, t_dongle *dongle)
+void	dongle_release(t_sim *sim, t_dongle *dongle)
 {
-	t_timeval now;
-	t_timespec timeout;
+	t_timeval	now;
+	t_timespec	timeout;
 
 	gettimeofday(&now, NULL);
-	timeout.tv_sec = now.tv_sec + sim->dongle_cooldown / 1000;
-	timeout.tv_nsec = (now.tv_usec * 1000) + (sim->dongle_cooldown % 1000) * 1000000;
+	timeout.tv_sec = now.tv_sec + sim->dongle_cd / 1000;
+	timeout.tv_nsec = (now.tv_usec * 1000) + (sim->dongle_cd % 1000) * 1000000;
 	if (timeout.tv_nsec >= 1000000000)
 	{
 		timeout.tv_sec++;

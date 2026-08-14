@@ -6,7 +6,7 @@
 /*   By: gmach <gmach@student.42lyon.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 17:30:08 by gmach             #+#    #+#             */
-/*   Updated: 2026/08/14 10:18:00 by gmach            ###   ########lyon.fr   */
+/*   Updated: 2026/08/14 10:32:33 by gmach            ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -137,14 +137,14 @@ typedef struct s_sim
 	bool		stop;
 	int			dongle_schedule;
 
-	int			number_of_coders;
-	int			number_of_compiles_required;
+	int			nb_coders;
+	int			nb_compiles;
 
 	size_t		time_to_burnout;
 	size_t		time_to_debug;
 	size_t		time_to_compile;
 	size_t		time_to_refactor;
-	size_t		dongle_cooldown;
+	size_t		dongle_cd;
 	size_t		start_time;
 
 }	t_sim;
