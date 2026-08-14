@@ -6,7 +6,7 @@
 /*   By: gmach <gmach@student.42lyon.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 17:30:08 by gmach             #+#    #+#             */
-/*   Updated: 2026/08/14 10:32:33 by gmach            ###   ########lyon.fr   */
+/*   Updated: 2026/08/14 14:00:25 by gmach            ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -171,6 +171,7 @@ void	*monitor_routine(void *arg);
 
 size_t	time_since_start(t_sim *sim);
 size_t	get_current_time(void);
+void	better_sleep(t_sim *sim, size_t duration_ms);
 
 int		parse_int(char *str);
 int		parse_str(char *str);

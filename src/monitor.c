@@ -6,11 +6,28 @@
 /*   By: gmach <gmach@student.42lyon.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 17:30:30 by gmach             #+#    #+#             */
-/*   Updated: 2026/08/14 10:27:19 by gmach            ###   ########lyon.fr   */
+/*   Updated: 2026/08/14 14:06:25 by gmach            ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "codexion.h"
+
+void	sim_stop_setter(t_sim *sim)
+{
+	int	i;
+
+	pthread_mutex_lock(&sim->stop_mutex);
+	sim->stop = true;
+	pthread_mutex_unlock(&sim->stop_mutex);
+	i = 0;
+	while (i < sim->nb_coders)
+	{
+		pthread_mutex_lock(&sim->dongles[i].mutex);
+		pthread_cond_broadcast(&sim->dongles[i].cond);
+		pthread_mutex_unlock(&sim->dongles[i].mutex);
+		i++;
+	}
+}
 
 bool	burnout(t_sim *sim, t_coder *coder, size_t last_compile_time)
 {
@@ -42,10 +59,10 @@ bool	complete(t_sim *sim)
 			return (false);
 		i++;
 	}
-	printf("%zu Simulation Complete\n", get_current_time() - sim->start_time);
 	sim_stop_setter(sim);
 	return (true);
 }
+// printf("%zu Simulation Complete\n", get_current_time() - sim->start_time);
 
 void	*monitor_routine(void *arg)
 {

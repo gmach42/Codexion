@@ -6,24 +6,11 @@
 /*   By: gmach <gmach@student.42lyon.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 17:29:58 by gmach             #+#    #+#             */
-/*   Updated: 2026/08/14 11:59:40 by gmach            ###   ########lyon.fr   */
+/*   Updated: 2026/08/14 13:58:54 by gmach            ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "codexion.h"
-
-void	better_sleep(t_sim *sim, size_t duration_ms)
-{
-	size_t	start_time;
-
-	start_time = get_current_time();
-	while (!sim_stop_getter(sim))
-	{
-		if (get_current_time() - start_time >= duration_ms)
-			break ;
-		usleep(duration_ms * 1000 / 10);
-	}
-}
 
 bool	compile(t_sim *sim, t_coder *coder)
 {
@@ -75,7 +62,6 @@ static bool	take_dongles(t_coder *coder)
 	}
 	return (true);
 }
-
 
 void	*routine(void *arg)
 {

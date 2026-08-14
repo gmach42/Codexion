@@ -6,7 +6,7 @@
 /*   By: gmach <gmach@student.42lyon.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 17:29:52 by gmach             #+#    #+#             */
-/*   Updated: 2026/08/14 11:08:05 by gmach            ###   ########lyon.fr   */
+/*   Updated: 2026/08/14 14:03:20 by gmach            ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,27 +27,8 @@ void	safe_print(t_sim *sim, int id, char *msg)
 	pthread_mutex_lock(&sim->print_mutex);
 	if (!sim_stop_getter(sim))
 		printf("%zu %d %s\n",
-			get_current_time() - sim->start_time,
-			id,
-			msg);
+			get_current_time() - sim->start_time, id, msg);
 	pthread_mutex_unlock(&sim->print_mutex);
-}
-
-void	sim_stop_setter(t_sim *sim)
-{
-	int	i;
-
-	pthread_mutex_lock(&sim->stop_mutex);
-	sim->stop = true;
-	pthread_mutex_unlock(&sim->stop_mutex);
-	i = 0;
-	while (i < sim->nb_coders)
-	{
-		pthread_mutex_lock(&sim->dongles[i].mutex);
-		pthread_cond_broadcast(&sim->dongles[i].cond);
-		pthread_mutex_unlock(&sim->dongles[i].mutex);
-		i++;
-	}
 }
 
 void	clean_up(t_sim *sim)
@@ -95,8 +76,9 @@ int	main(int argc, char **argv)
 	{
 		fprintf(stderr, "Expecting 8 args received %d args\n", argc - 1);
 		fprintf(stderr,
-			"number_of_coders, time_to_burnout, time_to_compile, time_to_debug, "
-			"time_to_refactor, number_of_compiles_required, dongle_cd, scheduler\n");
+			"number_of_coders, time_to_burnout, time_to_compile, "
+			"time_to_debug, time_to_refactor, number_of_compiles_required, "
+			"dongle_cd, scheduler\n");
 		return (1);
 	}
 	simulation_init(&sim, argv);

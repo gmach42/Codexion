@@ -6,7 +6,7 @@
 /*   By: gmach <gmach@student.42lyon.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 17:30:13 by gmach             #+#    #+#             */
-/*   Updated: 2026/08/14 11:06:28 by gmach            ###   ########lyon.fr   */
+/*   Updated: 2026/08/14 13:57:19 by gmach            ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,11 +33,11 @@ void	simulation_init(t_sim *sim, char **argv)
 	pthread_mutex_init(&sim->print_mutex, NULL);
 }
 
-void	coder_init(t_sim *sim, t_coder *coder, int id, t_dongle *left, t_dongle *right)
+void	coder_init(t_sim *sim, t_coder *coder, int id, t_dongle *dongles)
 {
 	coder->id = id;
-	coder->left = left;
-	coder->right = right;
+	coder->left = &dongles[id - 1];
+	coder->right = &dongles[id % sim->nb_coders];
 	coder->sim = sim;
 	coder->last_compile_time = sim->start_time;
 	coder->compile_count = 0;
@@ -46,8 +46,8 @@ void	coder_init(t_sim *sim, t_coder *coder, int id, t_dongle *left, t_dongle *ri
 
 void	coders_init(t_sim *sim)
 {
-	t_coder	*coders;
-	int		i;
+	t_coder		*coders;
+	int			i;
 
 	i = 0;
 	coders = malloc(sizeof(t_coder) * sim->nb_coders);
@@ -55,8 +55,7 @@ void	coders_init(t_sim *sim)
 		return ;
 	while (i < sim->nb_coders)
 	{
-		// coders[i].id = i + 1;
-		coder_init(sim, &coders[i], i + 1, &sim->dongles[i], &sim->dongles[(i + 1) % sim->nb_coders]);
+		coder_init(sim, &coders[i], i + 1, sim->dongles);
 		coders[i++].sim = sim;
 	}
 	sim->coders = coders;
@@ -67,7 +66,12 @@ void	dongle_init(t_dongle *dongle, int capacity)
 	pthread_cond_init(&dongle->cond, NULL);
 	pthread_mutex_init(&dongle->mutex, NULL);
 	dongle->available = true;
-	dongle->queue.nodes = malloc(sizeof(t_hnode) * capacity); // to check
+	dongle->queue.nodes = malloc(sizeof(t_hnode) * capacity);
+	if (!dongle->queue.nodes)
+	{
+		fprintf(stderr, "Error while creating dongle queue\n");
+		exit(EXIT_FAILURE);
+	}
 	dongle->queue.size = 0;
 	dongle->queue.capacity = capacity;
 }
