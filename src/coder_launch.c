@@ -19,8 +19,6 @@ void	launch_coders(t_sim *sim)
 	i = 0;
 	while (i < sim->nb_coders)
 	{
-		if (i % 2 == 0)
-			usleep(1000);
 		pthread_create(&sim->coders[i].thread, NULL, routine, &sim->coders[i]);
 		i++;
 	}
