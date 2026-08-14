@@ -15,6 +15,7 @@ DEPFLAGS := -MMD -MP
 SRCS := $(addprefix $(SRC_DIR)/, \
 	codexion.c\
 	coder.c\
+	coder_launch.c\
 	dongle.c\
 	heapq.c\
 	monitor.c\

@@ -6,7 +6,7 @@
 /*   By: gmach <gmach@student.42lyon.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 17:30:13 by gmach             #+#    #+#             */
-/*   Updated: 2026/08/14 13:57:19 by gmach            ###   ########lyon.fr   */
+/*   Updated: 2026/08/14 14:23:57 by gmach            ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,7 @@ void	coder_init(t_sim *sim, t_coder *coder, int id, t_dongle *dongles)
 	pthread_mutex_init(&coder->time_mutex, NULL);
 }
 
-void	coders_init(t_sim *sim)
+bool	coders_init(t_sim *sim)
 {
 	t_coder		*coders;
 	int			i;
@@ -52,31 +52,30 @@ void	coders_init(t_sim *sim)
 	i = 0;
 	coders = malloc(sizeof(t_coder) * sim->nb_coders);
 	if (!coders)
-		return ;
+		return (false);
 	while (i < sim->nb_coders)
 	{
 		coder_init(sim, &coders[i], i + 1, sim->dongles);
 		coders[i++].sim = sim;
 	}
 	sim->coders = coders;
+	return (true);
 }
 
-void	dongle_init(t_dongle *dongle, int capacity)
+bool	dongle_init(t_dongle *dongle, int capacity)
 {
 	pthread_cond_init(&dongle->cond, NULL);
 	pthread_mutex_init(&dongle->mutex, NULL);
 	dongle->available = true;
 	dongle->queue.nodes = malloc(sizeof(t_hnode) * capacity);
 	if (!dongle->queue.nodes)
-	{
-		fprintf(stderr, "Error while creating dongle queue\n");
-		exit(EXIT_FAILURE);
-	}
+		return (false);
 	dongle->queue.size = 0;
 	dongle->queue.capacity = capacity;
+	return (true);
 }
 
-void	dongles_init(t_sim *sim)
+bool	dongles_init(t_sim *sim)
 {
 	t_dongle	*dongles;
 	int			i;
@@ -84,14 +83,17 @@ void	dongles_init(t_sim *sim)
 	i = 0;
 	dongles = malloc(sizeof(t_dongle) * sim->nb_coders);
 	if (!dongles)
-	{
-		printf("Error while creating dongles\n");
-		exit(EXIT_FAILURE);
-	}
+		return (false);
+	sim->dongles = dongles;
 	while (i < sim->nb_coders)
 	{
-		dongle_init(&dongles[i], sim->nb_coders);
+		if (!dongle_init(&dongles[i], sim->nb_coders))
+		{
+			sim->nb_coders = i;
+			free_dongles(sim);
+			return (false);
+		}
 		i++;
 	}
-	sim->dongles = dongles;
+	return (true);
 }

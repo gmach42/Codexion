@@ -6,7 +6,7 @@
 /*   By: gmach <gmach@student.42lyon.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 17:30:08 by gmach             #+#    #+#             */
-/*   Updated: 2026/08/14 14:00:25 by gmach            ###   ########lyon.fr   */
+/*   Updated: 2026/08/14 14:23:55 by gmach            ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -159,15 +159,18 @@ bool	sim_stop_getter(t_sim *sim);
 
 bool	dongle_take(t_sim *sim, t_dongle *dongle, t_coder *coder);
 void	dongle_release(t_sim *sim, t_dongle *dongle);
+void	free_dongles(t_sim *sim);
 
 void	heap_push(t_heap *heap, t_hnode node);
 t_hnode	heap_pop(t_heap *heap);
 bool	heap_top_is(t_heap *heap, int coder_id);
 
 void	simulation_init(t_sim *sim, char **argv);
-void	coders_init(t_sim *sim);
-void	dongles_init(t_sim *sim);
+bool	coders_init(t_sim *sim);
+bool	dongles_init(t_sim *sim);
 void	*monitor_routine(void *arg);
+void	launch_coders(t_sim *sim);
+void	join_coders(t_sim *sim, pthread_t monitor_thread);
 
 size_t	time_since_start(t_sim *sim);
 size_t	get_current_time(void);

@@ -6,7 +6,7 @@
 /*   By: gmach <gmach@student.42lyon.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/23 13:04:03 by gmach             #+#    #+#             */
-/*   Updated: 2026/08/14 10:45:12 by gmach            ###   ########lyon.fr   */
+/*   Updated: 2026/08/14 14:23:57 by gmach            ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,4 +87,19 @@ void	dongle_release(t_sim *sim, t_dongle *dongle)
 	dongle->available = true;
 	pthread_cond_broadcast(&dongle->cond);
 	pthread_mutex_unlock(&dongle->mutex);
+}
+
+void	free_dongles(t_sim *sim)
+{
+	int	i;
+
+	i = 0;
+	while (i < sim->nb_coders)
+	{
+		pthread_cond_destroy(&sim->dongles[i].cond);
+		pthread_mutex_destroy(&sim->dongles[i].mutex);
+		free(sim->dongles[i].queue.nodes);
+		i++;
+	}
+	free(sim->dongles);
 }
