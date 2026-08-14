@@ -6,7 +6,7 @@
 /*   By: gmach <gmach@student.42lyon.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/23 13:04:03 by gmach             #+#    #+#             */
-/*   Updated: 2026/08/14 09:22:55 by gmach            ###   ########lyon.fr   */
+/*   Updated: 2026/08/14 10:16:26 by gmach            ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,9 +18,9 @@
  *        EDF : priority = last_compile_start + time_to_burnout (ms),
  *              tiebreak = arrival time.
  */
-static t_heap_node build_node(t_sim *sim, t_coder *coder)
+static t_hnode build_node(t_sim *sim, t_coder *coder)
 {
-	t_heap_node node;
+	t_hnode node;
 
 	node.coder_id = coder->id;
 	node.tiebreak = get_current_time();
@@ -46,7 +46,7 @@ static t_heap_node build_node(t_sim *sim, t_coder *coder)
  */
 bool dongle_take(t_sim *sim, t_dongle *dongle, t_coder *coder)
 {
-	t_heap_node node;
+	t_hnode node;
 
 	if (sim_stop_getter(sim))
 		return (false);

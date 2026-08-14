@@ -6,15 +6,15 @@
 /*   By: gmach <gmach@student.42lyon.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/26 00:00:00 by gmach             #+#    #+#             */
-/*   Updated: 2026/08/14 09:29:12 by gmach            ###   ########lyon.fr   */
+/*   Updated: 2026/08/14 10:16:26 by gmach            ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "codexion.h"
 
-static void heap_swap(t_heap_node *a, t_heap_node *b)
+static void heap_swap(t_hnode *a, t_hnode *b)
 {
-	t_heap_node tmp;
+	t_hnode tmp;
 
 	tmp = *a;
 	*a = *b;
@@ -28,7 +28,7 @@ static void heap_swap(t_heap_node *a, t_heap_node *b)
  *		Secondary key: tiebreak (arrival time, lower = earlier).
  *		Tertiary key : coder_id (lower = higher priority).
  */
-static int heap_cmp(const t_heap_node *a, const t_heap_node *b)
+static int heap_cmp(const t_hnode *a, const t_hnode *b)
 {
 	if (a->priority != b->priority)
 	{
@@ -51,7 +51,7 @@ static int heap_cmp(const t_heap_node *a, const t_heap_node *b)
  * @brief Insert `node` into the min-heap and shift it up.
  *        Does not proceed if the heap is already at max capacity.
  */
-void heap_push(t_heap *heap, t_heap_node node)
+void heap_push(t_heap *heap, t_hnode node)
 {
 	int i;
 	int parent;
@@ -72,11 +72,11 @@ void heap_push(t_heap *heap, t_heap_node node)
 
 /**
  * @brief Remove and return the minimum node, then shift the replacement down.
- *        Caller must ensure heap->size > 0 (use heap_top_is() first).
+ *        Caller must ensure heap->size > 0.
  */
-t_heap_node heap_pop(t_heap *heap)
+t_hnode heap_pop(t_heap *heap)
 {
-	t_heap_node top;
+	t_hnode top;
 	int i;
 	int child;
 
