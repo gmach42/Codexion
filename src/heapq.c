@@ -6,7 +6,7 @@
 /*   By: gmach <gmach@student.42lyon.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/26 00:00:00 by gmach             #+#    #+#             */
-/*   Updated: 2026/06/26 14:16:41 by gmach            ###   ########lyon.fr   */
+/*   Updated: 2026/08/14 09:29:12 by gmach            ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,23 +23,33 @@ static void heap_swap(t_heap_node *a, t_heap_node *b)
 
 /**
  * @brief Compare two heap nodes.
- *        Returns < 0 if `a` has strictly higher priority than `b`.
- *        Primary key  : priority (lower value = higher priority).
- *        Secondary key: tiebreak (arrival time, lower = earlier).
- *        Tertiary key : coder_id (lower = higher priority).
+ *		Returns < 0 if `a` has strictly higher priority than `b`.
+ *		Primary key  : priority (lower value = higher priority).
+ *		Secondary key: tiebreak (arrival time, lower = earlier).
+ *		Tertiary key : coder_id (lower = higher priority).
  */
 static int heap_cmp(const t_heap_node *a, const t_heap_node *b)
 {
 	if (a->priority != b->priority)
-		return ((a->priority < b->priority) ? -1 : 1);
+	{
+		if (a->priority < b->priority)
+			return (-1);
+		return (1);
+	}
 	if (a->tiebreak != b->tiebreak)
-		return ((a->tiebreak < b->tiebreak) ? -1 : 1);
-	return ((a->coder_id < b->coder_id) ? -1 : 1);
+	{
+		if (a->tiebreak < b->tiebreak)
+			return (-1);
+		return (1);
+	}
+	if (a->coder_id < b->coder_id)
+		return (-1);
+	return (1);
 }
 
 /**
- * @brief Insert `node` into the min-heap and sift it up.
- *        No-op if the heap is already at capacity.
+ * @brief Insert `node` into the min-heap and shift it up.
+ *        Does not proceed if the heap is already at max capacity.
  */
 void heap_push(t_heap *heap, t_heap_node node)
 {
@@ -61,7 +71,7 @@ void heap_push(t_heap *heap, t_heap_node node)
 }
 
 /**
- * @brief Remove and return the minimum node, then sift the replacement down.
+ * @brief Remove and return the minimum node, then shift the replacement down.
  *        Caller must ensure heap->size > 0 (use heap_top_is() first).
  */
 t_heap_node heap_pop(t_heap *heap)
@@ -89,7 +99,7 @@ t_heap_node heap_pop(t_heap *heap)
 }
 
 /**
- * @brief Return true iff the heap is non-empty and its minimum node
+ * @brief Return true if the heap is non-empty and its minimum node
  *        belongs to `coder_id`.
  */
 bool heap_top_is(t_heap *heap, int coder_id)
