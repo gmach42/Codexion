@@ -6,7 +6,7 @@
 /*   By: gmach <gmach@student.42lyon.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 17:29:52 by gmach             #+#    #+#             */
-/*   Updated: 2026/06/26 14:16:32 by gmach            ###   ########lyon.fr   */
+/*   Updated: 2026/08/14 09:05:09 by gmach            ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,7 +96,7 @@ int main(int argc, char **argv)
 	if (argc != 9)
 	{
 		fprintf(stderr, "Expecting 8 args received %d args\n", argc - 1);
-		fprintf(stderr, "number_of_coders, time_to_burnout, time_to_compile, time_to_debug, time_to_refactor, number_of_compiles_required, dongle_cooldown, scheduler");
+		fprintf(stderr, "number_of_coders, time_to_burnout, time_to_compile, time_to_debug, time_to_refactor, number_of_compiles_required, dongle_cooldown, scheduler\n");
 		return (1);
 	}
 	simulation_init(&sim, argv);

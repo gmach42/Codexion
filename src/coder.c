@@ -6,7 +6,7 @@
 /*   By: gmach <gmach@student.42lyon.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 17:29:58 by gmach             #+#    #+#             */
-/*   Updated: 2026/02/25 17:29:59 by gmach            ###   ########lyon.fr   */
+/*   Updated: 2026/08/14 08:58:08 by gmach            ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,9 +65,7 @@ void	*routine(void *arg)
 	while (!sim_stop_getter(coder->sim))
 	{
 		/* Always request dongles in a fixed global order (lowest memory
-		 * address first). This total ordering breaks the circular wait
-		 * (Coffman condition) that would otherwise deadlock the ring
-		 * if every coder grabbed left then right in lock-step. */
+		 * address first). */
 		if (coder->left < coder->right)
 		{
 			if (!dongle_take(coder->sim, coder->left, coder))

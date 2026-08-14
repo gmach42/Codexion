@@ -6,17 +6,17 @@
 /*   By: gmach <gmach@student.42lyon.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/23 13:04:03 by gmach             #+#    #+#             */
-/*   Updated: 2026/06/26 14:16:46 by gmach            ###   ########lyon.fr   */
+/*   Updated: 2026/08/14 09:00:42 by gmach            ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "codexion.h"
 
 /**
- * @brief Build a heap node for `coder` requesting `dongle`.
- *        FIFO: priority = arrival timestamp (ms).
+ * @brief Build a heap node for coder requesting dongle.
+ *        FIFO: priority = arrival time (ms).
  *        EDF : priority = last_compile_start + time_to_burnout (ms),
- *              tiebreak = arrival timestamp.
+ *              tiebreak = arrival time.
  */
 static t_heap_node build_node(t_sim *sim, t_coder *coder)
 {
@@ -36,12 +36,8 @@ static t_heap_node build_node(t_sim *sim, t_coder *coder)
 }
 
 /**
- * @brief Try to acquire `dongle` on behalf of `coder`.
- *
- *        The coder's request is pushed onto the dongle's min-heap so that
- *        the scheduler (FIFO or EDF) grants access in the correct order.
- *        The calling thread sleeps on the dongle's condition variable and
- *        only takes the dongle when:
+ * @brief Try to acquire dongle for a coder.
+ *        Only takes the dongle when:
  *          - it is at the head of the priority queue, AND
  *          - the dongle is not in its cooldown period.
  *

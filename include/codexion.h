@@ -6,12 +6,12 @@
 /*   By: gmach <gmach@student.42lyon.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 17:30:08 by gmach             #+#    #+#             */
-/*   Updated: 2026/06/26 14:16:36 by gmach            ###   ########lyon.fr   */
+/*   Updated: 2026/08/14 09:17:46 by gmach            ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef CODEXION_H
-#define CODEXION_H
+#ifndef	CODEXION_H
+#define	CODEXION_H
 
 #include <unistd.h>	  // usleep, write
 #include <stdio.h>	  // printf, fprintf
@@ -68,9 +68,9 @@ typedef struct s_heap_node
 
 /**
  *	@file	heapq.c
- *	@brief	Min-heap (priority queue) used per dongle to order waiters
+ *	@brief	Min-heap (priority queue)
  *
- *	@param	nodes		Dynamically allocated array of heap nodes.
+ *	@param	nodes		heap nodes.
  *	@param	size		Number of elements currently in the heap.
  *	@param	capacity	Maximum number of elements (= number_of_coders).
  */
