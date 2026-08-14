@@ -6,7 +6,7 @@
 /*   By: gmach <gmach@student.42lyon.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 17:30:08 by gmach             #+#    #+#             */
-/*   Updated: 2026/08/14 15:43:13 by gmach            ###   ########lyon.fr   */
+/*   Updated: 2026/08/14 17:14:16 by gmach            ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -158,7 +158,7 @@ void	safe_print(t_sim *sim, int id, char *msg);
 void	sim_stop_setter(t_sim *sim);
 bool	sim_stop_getter(t_sim *sim);
 
-bool	dongle_take(t_sim *sim, t_dongle *dongle, t_coder *coder);
+bool	dongle_take(t_sim *sim, t_dongle *dongle, t_coder *coder, size_t arrival);
 void	dongle_release(t_sim *sim, t_dongle *dongle);
 void	free_dongles(t_sim *sim);
 

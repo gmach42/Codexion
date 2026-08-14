@@ -6,7 +6,7 @@
 /*   By: gmach <gmach@student.42lyon.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/23 13:04:03 by gmach             #+#    #+#             */
-/*   Updated: 2026/08/14 16:01:22 by gmach            ###   ########lyon.fr   */
+/*   Updated: 2026/08/14 17:14:16 by gmach            ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,12 +18,12 @@
  *        EDF : priority = last_compile_start + time_to_burnout (ms),
  *              tiebreak = arrival time.
  */
-static t_hnode	build_node(t_sim *sim, t_coder *coder)
+static t_hnode	build_node(t_sim *sim, t_coder *coder, size_t arrival)
 {
 	t_hnode	node;
 
 	node.coder_id = coder->id;
-	node.tiebreak = get_current_time();
+	node.tiebreak = arrival;
 	if (sim->dongle_schedule == 0)
 		node.priority = node.tiebreak;
 	else
@@ -62,13 +62,13 @@ static void	dongle_wait(t_sim *sim, t_dongle *dongle, t_coder *coder)
  * @return true  on success (dongle taken).
  * @return false if the simulation stopped before the dongle was acquired.
  */
-bool	dongle_take(t_sim *sim, t_dongle *dongle, t_coder *coder)
+bool	dongle_take(t_sim *sim, t_dongle *dongle, t_coder *coder, size_t arrival)
 {
 	t_hnode	node;
 
 	if (sim_stop_getter(sim))
 		return (false);
-	node = build_node(sim, coder);
+	node = build_node(sim, coder, arrival);
 	pthread_mutex_lock(&dongle->mutex);
 	heap_push(&dongle->queue, node);
 	dongle_wait(sim, dongle, coder);

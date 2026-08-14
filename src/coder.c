@@ -6,7 +6,7 @@
 /*   By: gmach <gmach@student.42lyon.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 17:29:58 by gmach             #+#    #+#             */
-/*   Updated: 2026/08/14 13:58:54 by gmach            ###   ########lyon.fr   */
+/*   Updated: 2026/08/14 17:27:02 by gmach            ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,18 +46,28 @@ bool	refactor(t_sim *sim, t_coder *coder)
 
 static bool	take_dongles(t_coder *coder)
 {
-	if (coder->left < coder->right)
+	size_t	arrival;
+	bool	first_round;
+
+	pthread_mutex_lock(&coder->time_mutex);
+	first_round = (coder->compile_count == 0);
+	pthread_mutex_unlock(&coder->time_mutex);
+	if (first_round && coder->id % 2 == 0)
+		better_sleep(coder->sim, 5);
+	arrival = get_current_time();
+	if ((first_round && coder->id % 2 == 1)
+		|| (!first_round && coder->left < coder->right))
 	{
-		if (!dongle_take(coder->sim, coder->left, coder))
+		if (!dongle_take(coder->sim, coder->left, coder, arrival))
 			return (false);
-		if (!dongle_take(coder->sim, coder->right, coder))
+		if (!dongle_take(coder->sim, coder->right, coder, arrival))
 			return (false);
 	}
 	else
 	{
-		if (!dongle_take(coder->sim, coder->right, coder))
+		if (!dongle_take(coder->sim, coder->right, coder, arrival))
 			return (false);
-		if (!dongle_take(coder->sim, coder->left, coder))
+		if (!dongle_take(coder->sim, coder->left, coder, arrival))
 			return (false);
 	}
 	return (true);
