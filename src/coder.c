@@ -55,8 +55,7 @@ static bool	take_dongles(t_coder *coder)
 	if (first_round && coder->id % 2 == 0)
 		better_sleep(coder->sim, 5);
 	arrival = get_current_time();
-	if ((first_round && coder->id % 2 == 1)
-		|| (!first_round && coder->left < coder->right))
+	if (coder->id % 2 == 1)
 	{
 		if (!dongle_take(coder->sim, coder->left, coder, arrival))
 			return (false);
