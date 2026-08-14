@@ -123,9 +123,6 @@ make t
 # Build with debug symbols and run
 make debug
 
-# Memory check with Valgrind
-make valgrind
-
 # Run the automated test suites (argument validation, log format, timing, edge cases)
 make test
 make test2
