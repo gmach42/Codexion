@@ -69,7 +69,7 @@ Each dongle has a `pthread_cond_t` used for two purposes:
 
 | Scenario | Mitigation |
 |---|---|
-| **Deadlock (circular wait)** | Every coder acquires its two dongles in a fixed global order (lower memory address first) instead of always left-then-right. This total ordering makes a circular hold-and-wait around the ring impossible (Coffman's 4th condition is eliminated). |
+| **Deadlock (circular wait)** | Coders alternate their acquisition order based on parity: odd-numbered coders take their left dongle first then their right, while even-numbered coders take their right dongle first then their left. This breaks the circular hold-and-wait pattern around the ring (Coffman's 4th condition is eliminated), since two neighbouring coders never contend for the shared dongle in the same order. With a single coder, both "left" and "right" resolve to the same lone dongle, so it is simply acquired once and the coder burns out at the end of `time_to_burnout` since a solo coder can never hold two dongles simultaneously. |
 | **Starvation** | The `edf` scheduler grants a contested dongle to the coder with the nearest burnout deadline (`last_compile_start + time_to_burnout`), so no coder is perpetually skipped while parameters remain feasible. |
 | **Dongle cooldown** | `pthread_cond_timedwait` blocks the releasing coder until the cooldown expires instead of spinning or reusing the dongle immediately. |
 | **Burnout detection precision** | The monitor thread polls every coder's `last_compile_time` every 1 ms (well under the 10 ms tolerance) using the coder's own mutex. |
