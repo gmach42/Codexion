@@ -123,10 +123,6 @@ make t
 # Build with debug symbols and run
 make debug
 
-# Run the automated test suites (argument validation, log format, timing, edge cases)
-make test
-make test2
-
 # Clean object files
 make clean
 
