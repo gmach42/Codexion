@@ -61,12 +61,6 @@ clean:
 fclean: clean
 	$(RM) $(NAME)
 
-test:
-	bash tester.sh
-
-test2:
-	bash tester2.sh
-
 re: fclean all
 
 .PHONY: all clean fclean re test test2
