@@ -6,7 +6,7 @@
 /*   By: gmach <gmach@student.42lyon.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 17:30:20 by gmach             #+#    #+#             */
-/*   Updated: 2026/08/14 09:20:39 by gmach            ###   ########lyon.fr   */
+/*   Updated: 2026/08/18 18:17:26 by gmach            ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,9 +41,9 @@ int	parse_int(char *str)
 int	parse_str(char *str)
 {
 	if (strcmp(str, "fifo") == 0)
-		return (0);
+		return (FIFO);
 	else if (strcmp(str, "edf") == 0)
-		return (1);
+		return (EDF);
 	else
 	{
 		fprintf(stderr, "Invalid scheduler: %s\n", str);

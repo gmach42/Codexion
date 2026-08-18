@@ -6,7 +6,7 @@
 /*   By: gmach <gmach@student.42lyon.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/23 13:04:03 by gmach             #+#    #+#             */
-/*   Updated: 2026/08/18 15:57:06 by gmach            ###   ########lyon.fr   */
+/*   Updated: 2026/08/18 18:17:13 by gmach            ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ static t_hnode	build_node(t_sim *sim, t_coder *coder, size_t arrival)
 
 	node.coder_id = coder->id;
 	node.tiebreak = arrival;
-	if (sim->dongle_schedule == 0)
+	if (sim->dongle_schedule == FIFO)
 		node.priority = node.tiebreak;
 	else
 	{
@@ -40,7 +40,8 @@ static void	dongle_wait(t_sim *sim, t_dongle *dongle, t_coder *coder)
 	t_timespec	timeout;
 
 	while (!sim_stop_getter(sim)
-		&& !(dongle->available && heap_top_is(&dongle->queue, coder->id)))
+		&& !(dongle->available && get_current_time() >= dongle->cooldown
+			&& heap_top_is(&dongle->queue, coder->id)))
 	{
 		if (dongle->available && get_current_time() < dongle->cooldown)
 		{

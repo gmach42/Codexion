@@ -6,7 +6,7 @@
 /*   By: gmach <gmach@student.42lyon.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 17:30:08 by gmach             #+#    #+#             */
-/*   Updated: 2026/08/18 15:52:10 by gmach            ###   ########lyon.fr   */
+/*   Updated: 2026/08/18 18:17:39 by gmach            ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,12 @@ typedef pthread_cond_t	t_cond;
 typedef struct s_sim	t_sim;
 typedef struct s_coder	t_coder;
 typedef struct s_dongle	t_dongle;
+
+typedef enum e_schedule
+{
+	FIFO,
+	EDF
+}	t_schedule;
 
 # define GREEN "\033[0;32m"
 # define BLUE "\033[0;36m"
@@ -124,8 +130,7 @@ typedef struct s_sim
 	t_mutex		stop_mutex;
 	t_mutex		print_mutex;
 	bool		stop;
-	int			dongle_schedule; /**< 0 = FIFO, 1 = EDF */
-
+	t_schedule	dongle_schedule; /**< FIFO or EDF */
 	int			nb_coders;
 	int			nb_compiles;
 
