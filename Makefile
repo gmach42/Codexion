@@ -50,9 +50,9 @@ debug: $(OBJS)
 # 	$(CC) $(CFLAGS) $(FLAGS) $(DEBUG_FLAGS) $(OBJS) -o $(NAME)
 # 	gdb --args $(NAME) 4 600 300 100 100 10 100 fifo
 
-# valgrind: $(OBJS)
-# 	$(CC) $(CFLAGS) $(FLAGS) $(DEBUG_FLAGS) $(OBJS) -o $(NAME)
-# 	valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all --tool=memcheck ./$(NAME) 4 600 300 100 100 10 100 fifo
+valgrind: $(OBJS)
+	$(CC) $(CFLAGS) $(FLAGS) $(DEBUG_FLAGS) $(OBJS) -o $(NAME)
+	valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all --tool=memcheck ./$(NAME) 4 600 300 100 100 10 100 fifo
 
 clean:
 	$(RM) $(OBJS) $(DEPS)

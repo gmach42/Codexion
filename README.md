@@ -139,21 +139,6 @@ make re
 
 ---
 
-## Debugging
-
-Exemple of gdb usage to debug the monitor thread:
-
-```gdb
-(gdb) --args ./codexion 4 600 300 100 100 10 100 fifo
-(gdb) break monitor_routine
-(gdb) run
-(gdb) info threads
-(gdb) thread 3
-(gdb) backtrace
-```
-
----
-
 ## Resources
 
 - [Multithreading in C — GeeksforGeeks](https://www.geeksforgeeks.org/c/multithreading-in-c/)

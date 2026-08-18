@@ -6,17 +6,12 @@
 /*   By: gmach <gmach@student.42lyon.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 17:30:23 by gmach             #+#    #+#             */
-/*   Updated: 2026/08/14 20:02:55 by gmach            ###   ########lyon.fr   */
+/*   Updated: 2026/08/18 16:14:58 by gmach            ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "codexion.h"
 
-/**
- * @brief Get the current time in millisecond
- *
- * @return size_t
- */
 size_t	get_current_time(void)
 {
 	struct timeval	time;
