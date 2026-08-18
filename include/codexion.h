@@ -6,7 +6,7 @@
 /*   By: gmach <gmach@student.42lyon.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 17:30:08 by gmach             #+#    #+#             */
-/*   Updated: 2026/08/14 20:02:57 by gmach            ###   ########lyon.fr   */
+/*   Updated: 2026/08/18 15:52:10 by gmach            ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -124,7 +124,7 @@ typedef struct s_sim
 	t_mutex		stop_mutex;
 	t_mutex		print_mutex;
 	bool		stop;
-	int			dongle_schedule;
+	int			dongle_schedule; /**< 0 = FIFO, 1 = EDF */
 
 	int			nb_coders;
 	int			nb_compiles;
@@ -146,7 +146,7 @@ void	safe_print(t_sim *sim, int id, char *msg);
 void	sim_stop_setter(t_sim *sim);
 bool	sim_stop_getter(t_sim *sim);
 
-bool	dongle_take(t_sim *sim, t_dongle *dongle, t_coder *coder, size_t arrival);
+bool	dongle_take(t_sim *sim, t_dongle *dongle, t_coder *coder, size_t t);
 void	dongle_release(t_sim *sim, t_dongle *dongle);
 void	free_dongles(t_sim *sim);
 

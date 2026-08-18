@@ -165,6 +165,5 @@ Exemple of gdb usage to debug the monitor thread:
 ### AI Usage Disclosure
 
 AI assistance (GitHub Copilot) was used to:
-- Create 2 testers `tester.sh` and `tester2.sh`
-- Review the existing implementation against the subject requirements and identify bugs via the `tester.sh` / `tester2.sh` test suites (argument validation, 1-indexed coder IDs, per-coder compile-count completion condition, and the left/right dongle acquisition order causing a Dining-Philosophers-style deadlock).
+- Review the existing implementation against the subject requirements and identify bugs (argument validation, 1-indexed coder IDs, per-coder compile-count completion condition, and the left/right dongle acquisition order causing a Dining-Philosophers-style deadlock).
 - Draft and update this README's documentation sections.

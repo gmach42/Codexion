@@ -6,7 +6,7 @@
 /*   By: gmach <gmach@student.42lyon.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/23 13:04:03 by gmach             #+#    #+#             */
-/*   Updated: 2026/08/14 17:14:16 by gmach            ###   ########lyon.fr   */
+/*   Updated: 2026/08/18 15:57:06 by gmach            ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,22 +53,13 @@ static void	dongle_wait(t_sim *sim, t_dongle *dongle, t_coder *coder)
 	}
 }
 
-/**
- * @brief Try to acquire `dongle` for a `coder`.
- *        Only takes the dongle when:
- *          - it is at the head of the priority queue, AND
- *          - the dongle is not in its cooldown period.
- *
- * @return true  on success (dongle taken).
- * @return false if the simulation stopped before the dongle was acquired.
- */
-bool	dongle_take(t_sim *sim, t_dongle *dongle, t_coder *coder, size_t arrival)
+bool	dongle_take(t_sim *sim, t_dongle *dongle, t_coder *coder, size_t t)
 {
 	t_hnode	node;
 
 	if (sim_stop_getter(sim))
 		return (false);
-	node = build_node(sim, coder, arrival);
+	node = build_node(sim, coder, t);
 	pthread_mutex_lock(&dongle->mutex);
 	heap_push(&dongle->queue, node);
 	dongle_wait(sim, dongle, coder);

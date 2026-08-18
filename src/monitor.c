@@ -6,7 +6,7 @@
 /*   By: gmach <gmach@student.42lyon.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 17:30:30 by gmach             #+#    #+#             */
-/*   Updated: 2026/08/14 20:02:56 by gmach            ###   ########lyon.fr   */
+/*   Updated: 2026/08/18 15:24:23 by gmach            ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,13 @@ static bool	burnout(t_sim *sim, t_coder *coder, size_t last_compile_time)
 		return (false);
 	if (get_current_time() - last_compile_time > sim->time_to_burnout)
 	{
-		safe_print(sim, coder->id, "burned out");
+		pthread_mutex_lock(&sim->print_mutex);
+		pthread_mutex_lock(&sim->stop_mutex);
+		sim->stop = true;
+		pthread_mutex_unlock(&sim->stop_mutex);
+		printf("%zu %d burned out\n",
+			get_current_time() - sim->start_time, coder->id);
+		pthread_mutex_unlock(&sim->print_mutex);
 		sim_stop_setter(sim);
 		return (true);
 	}

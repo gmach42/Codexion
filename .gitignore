@@ -4,3 +4,6 @@
 codexion
 .build/
 .test/
+test.sh
+tester.sh
+tester2.sh
