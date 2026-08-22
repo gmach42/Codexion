@@ -147,6 +147,7 @@ bool	compile(t_sim *sim, t_coder *coder);
 bool	debug(t_sim *sim, t_coder *coder);
 bool	refactor(t_sim *sim, t_coder *coder);
 void	*routine(void *arg);
+void	enqueue_dongles(t_coder *coder, size_t arrival);
 void	safe_print(t_sim *sim, int id, char *msg);
 void	sim_stop_setter(t_sim *sim);
 bool	sim_stop_getter(t_sim *sim);

@@ -92,18 +92,3 @@ void	dongle_release(t_sim *sim, t_dongle *dongle)
 	pthread_cond_broadcast(&dongle->cond);
 	pthread_mutex_unlock(&dongle->mutex);
 }
-
-void	free_dongles(t_sim *sim)
-{
-	int	i;
-
-	i = 0;
-	while (i < sim->nb_coders)
-	{
-		pthread_cond_destroy(&sim->dongles[i].cond);
-		pthread_mutex_destroy(&sim->dongles[i].mutex);
-		free(sim->dongles[i].queue.nodes);
-		i++;
-	}
-	free(sim->dongles);
-}

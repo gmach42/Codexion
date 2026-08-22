@@ -16,7 +16,9 @@ SRCS := $(addprefix $(SRC_DIR)/, \
 	codexion.c\
 	coder.c\
 	coder_launch.c\
+	coder_utils.c\
 	dongle.c\
+	dongle_utils.c\
 	heapq.c\
 	monitor.c\
 	parsing.c\
