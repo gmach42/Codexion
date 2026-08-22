@@ -55,18 +55,20 @@ static bool	take_dongles(t_coder *coder)
 	if (first_round && coder->id % 2 == 0)
 		better_sleep(coder->sim, 5);
 	arrival = get_current_time();
+	dongle_enqueue(coder->sim, coder->left, coder, arrival);
+	dongle_enqueue(coder->sim, coder->right, coder, arrival);
 	if (coder->id % 2 == 1)
 	{
-		if (!dongle_take(coder->sim, coder->left, coder, arrival))
+		if (!dongle_wait_and_take(coder->sim, coder->left, coder))
 			return (false);
-		if (!dongle_take(coder->sim, coder->right, coder, arrival))
+		if (!dongle_wait_and_take(coder->sim, coder->right, coder))
 			return (false);
 	}
 	else
 	{
-		if (!dongle_take(coder->sim, coder->right, coder, arrival))
+		if (!dongle_wait_and_take(coder->sim, coder->right, coder))
 			return (false);
-		if (!dongle_take(coder->sim, coder->left, coder, arrival))
+		if (!dongle_wait_and_take(coder->sim, coder->left, coder))
 			return (false);
 	}
 	return (true);

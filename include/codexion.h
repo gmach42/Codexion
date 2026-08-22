@@ -151,7 +151,8 @@ void	safe_print(t_sim *sim, int id, char *msg);
 void	sim_stop_setter(t_sim *sim);
 bool	sim_stop_getter(t_sim *sim);
 
-bool	dongle_take(t_sim *sim, t_dongle *dongle, t_coder *coder, size_t t);
+void	dongle_enqueue(t_sim *sim, t_dongle *dongle, t_coder *coder, size_t t);
+bool	dongle_wait_and_take(t_sim *sim, t_dongle *dongle, t_coder *coder);
 void	dongle_release(t_sim *sim, t_dongle *dongle);
 void	free_dongles(t_sim *sim);
 

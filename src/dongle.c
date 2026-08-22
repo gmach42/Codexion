@@ -54,15 +54,23 @@ static void	dongle_wait(t_sim *sim, t_dongle *dongle, t_coder *coder)
 	}
 }
 
-bool	dongle_take(t_sim *sim, t_dongle *dongle, t_coder *coder, size_t t)
+void	dongle_enqueue(t_sim *sim, t_dongle *dongle, t_coder *coder, size_t t)
 {
 	t_hnode	node;
 
 	if (sim_stop_getter(sim))
-		return (false);
+		return ;
 	node = build_node(sim, coder, t);
 	pthread_mutex_lock(&dongle->mutex);
 	heap_push(&dongle->queue, node);
+	pthread_mutex_unlock(&dongle->mutex);
+}
+
+bool	dongle_wait_and_take(t_sim *sim, t_dongle *dongle, t_coder *coder)
+{
+	if (sim_stop_getter(sim))
+		return (false);
+	pthread_mutex_lock(&dongle->mutex);
 	dongle_wait(sim, dongle, coder);
 	if (sim_stop_getter(sim))
 	{
