@@ -19,11 +19,14 @@ void	sim_stop_setter(t_sim *sim)
 	pthread_mutex_lock(&sim->stop_mutex);
 	sim->stop = true;
 	pthread_mutex_unlock(&sim->stop_mutex);
-	pthread_mutex_lock(&sim->dongle_mutex);
 	i = 0;
 	while (i < sim->nb_coders)
-		pthread_cond_signal(&sim->coders[i++].cond);
-	pthread_mutex_unlock(&sim->dongle_mutex);
+	{
+		pthread_mutex_lock(&sim->dongles[i].mutex);
+		pthread_cond_broadcast(&sim->dongles[i].cond);
+		pthread_mutex_unlock(&sim->dongles[i].mutex);
+		i++;
+	}
 }
 
 static bool	burnout(t_sim *sim, t_coder *coder, size_t last_compile_time)
