@@ -6,7 +6,7 @@
 /*   By: gmach <gmach@student.42lyon.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 17:30:08 by gmach             #+#    #+#             */
-/*   Updated: 2026/08/18 18:17:39 by gmach            ###   ########lyon.fr   */
+/*   Updated: 2026/08/22 17:07:45 by gmach            ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,12 +53,14 @@ typedef enum e_schedule
  *						EDF : last_compile_start + time_to_burnout (ms).
  *	@param	tiebreak	Arrival timestamp (ms), secondary sort key.
  *	@param	coder_id	ID of the requesting coder.
+ *	@param	pending		true if this coder is currently waiting on it.
  */
 typedef struct s_heap_node
 {
 	size_t	priority;
 	size_t	tiebreak;
 	int		coder_id;
+	bool	pending;
 }	t_hnode;
 
 /**
@@ -80,22 +82,14 @@ typedef struct s_heap
  *	@file 	dongle.c
  *	@brief	Represent a shared USB dongle
  *
- *	One dongle at the left and right of each coders whose are sitted in circle
- *	If only one coder is present, only one dongle will be available
- *	Dongle's priority is managed by a heapq schedule (FIFO or EDF)
- *
- * @param	mutex		Lock a dongle when it's used
- * @param	cond		Condition to lock the dongle (cooldown)
  * @param	available	true if available else false
- * @param	queue		Priority queue of coders waiting for this dongle
+ * @param	queue		Priority queue of the (at most 2) neighbor coders
  */
 typedef struct s_dongle
 {
-	t_mutex	mutex;	/**< Protects access to dongle state */
-	t_cond	cond;	/**< Signal waiting coders */
 	bool	available; /**< Boolean indicating if the dongle is available */
 	size_t	cooldown; /**< Timestamp when the dongle will be available again */
-	t_heap	queue;	/**< Priority queue of waiting coders */
+	t_heap	queue;	/**< Priority queue of the (at most 2) neighbor coders */
 }	t_dongle;
 
 /**
@@ -114,6 +108,7 @@ typedef struct s_coder
 	size_t		last_compile_time;
 	int			compile_count;
 	t_mutex		time_mutex;
+	t_cond		cond; /**< Woken only by releases on its own 2 dongles */
 
 	pthread_t	thread;
 	t_sim		*sim;
@@ -129,6 +124,7 @@ typedef struct s_sim
 
 	t_mutex		stop_mutex;
 	t_mutex		print_mutex;
+	t_mutex		dongle_mutex; /**< Guards all dongles + the atomic pair-take */
 	bool		stop;
 	t_schedule	dongle_schedule; /**< FIFO or EDF */
 	int			nb_coders;
@@ -151,13 +147,16 @@ void	safe_print(t_sim *sim, int id, char *msg);
 void	sim_stop_setter(t_sim *sim);
 bool	sim_stop_getter(t_sim *sim);
 
-bool	dongle_take(t_sim *sim, t_dongle *dongle, t_coder *coder, size_t t);
+void	dongles_request(t_sim *sim, t_coder *coder, size_t arrival);
+bool	dongles_acquire(t_sim *sim, t_coder *coder);
 void	dongle_release(t_sim *sim, t_dongle *dongle);
 void	free_dongles(t_sim *sim);
 
 void	heap_push(t_heap *heap, t_hnode node);
 t_hnode	heap_pop(t_heap *heap);
-bool	heap_top_is(t_heap *heap, int coder_id);
+void	heap_upsert(t_heap *heap, t_hnode node);
+void	heap_set_pending(t_heap *heap, int coder_id, bool pending);
+bool	heap_pending_top_is(t_heap *heap, int coder_id);
 
 void	simulation_init(t_sim *sim, char **argv);
 bool	coders_init(t_sim *sim);

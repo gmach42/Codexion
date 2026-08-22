@@ -37,9 +37,14 @@ static void	clean_up(t_sim *sim)
 
 	pthread_mutex_destroy(&sim->stop_mutex);
 	pthread_mutex_destroy(&sim->print_mutex);
+	pthread_mutex_destroy(&sim->dongle_mutex);
 	i = 0;
 	while (i < sim->nb_coders)
-		pthread_mutex_destroy(&sim->coders[i++].time_mutex);
+	{
+		pthread_mutex_destroy(&sim->coders[i].time_mutex);
+		pthread_cond_destroy(&sim->coders[i].cond);
+		i++;
+	}
 	free_dongles(sim);
 	free(sim->coders);
 }

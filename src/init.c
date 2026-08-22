@@ -31,6 +31,7 @@ void	simulation_init(t_sim *sim, char **argv)
 	sim->stop = false;
 	pthread_mutex_init(&sim->stop_mutex, NULL);
 	pthread_mutex_init(&sim->print_mutex, NULL);
+	pthread_mutex_init(&sim->dongle_mutex, NULL);
 }
 
 static void	coder_init(t_sim *sim, t_coder *coder, int id, t_dongle *dongles)
@@ -42,6 +43,7 @@ static void	coder_init(t_sim *sim, t_coder *coder, int id, t_dongle *dongles)
 	coder->last_compile_time = sim->start_time;
 	coder->compile_count = 0;
 	pthread_mutex_init(&coder->time_mutex, NULL);
+	pthread_cond_init(&coder->cond, NULL);
 }
 
 bool	coders_init(t_sim *sim)
@@ -64,8 +66,6 @@ bool	coders_init(t_sim *sim)
 
 static bool	dongle_init(t_dongle *dongle, int capacity)
 {
-	pthread_cond_init(&dongle->cond, NULL);
-	pthread_mutex_init(&dongle->mutex, NULL);
 	dongle->available = true;
 	dongle->cooldown = 0;
 	dongle->queue.nodes = malloc(sizeof(t_hnode) * capacity);

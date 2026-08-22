@@ -22,7 +22,8 @@ bool	compile(t_sim *sim, t_coder *coder)
 	pthread_mutex_unlock(&coder->time_mutex);
 	better_sleep(sim, sim->time_to_compile);
 	dongle_release(sim, coder->left);
-	dongle_release(sim, coder->right);
+	if (coder->right != coder->left)
+		dongle_release(sim, coder->right);
 	return (true);
 }
 
@@ -44,9 +45,17 @@ bool	refactor(t_sim *sim, t_coder *coder)
 	return (true);
 }
 
+/**
+ * @brief First-round-only stagger: without it, every coder's initial
+ *        deadline is identical (last_compile_time == sim start_time for
+ *        everyone), so odd/even neighbors would tie and only the lowest
+ *        coder id could ever win any contested dongle, serializing the
+ *        whole ring instead of letting alternating pairs compile in
+ *        parallel. This is dropped after round 1: from then on, each
+ *        coder's own compile history naturally spreads deadlines apart.
+ */
 static bool	take_dongles(t_coder *coder)
 {
-	size_t	arrival;
 	bool	first_round;
 
 	pthread_mutex_lock(&coder->time_mutex);
@@ -54,22 +63,8 @@ static bool	take_dongles(t_coder *coder)
 	pthread_mutex_unlock(&coder->time_mutex);
 	if (first_round && coder->id % 2 == 0)
 		better_sleep(coder->sim, 5);
-	arrival = get_current_time();
-	if (coder->id % 2 == 1)
-	{
-		if (!dongle_take(coder->sim, coder->left, coder, arrival))
-			return (false);
-		if (!dongle_take(coder->sim, coder->right, coder, arrival))
-			return (false);
-	}
-	else
-	{
-		if (!dongle_take(coder->sim, coder->right, coder, arrival))
-			return (false);
-		if (!dongle_take(coder->sim, coder->left, coder, arrival))
-			return (false);
-	}
-	return (true);
+	dongles_request(coder->sim, coder, get_current_time());
+	return (dongles_acquire(coder->sim, coder));
 }
 
 void	*routine(void *arg)

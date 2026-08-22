@@ -91,7 +91,66 @@ t_hnode	heap_pop(t_heap *heap)
 	return (top);
 }
 
-bool	heap_top_is(t_heap *heap, int coder_id)
+static t_hnode	*heap_find(t_heap *heap, int coder_id)
 {
-	return (heap->size > 0 && heap->nodes[0].coder_id == coder_id);
+	int	i;
+
+	i = 0;
+	while (i < heap->size)
+	{
+		if (heap->nodes[i].coder_id == coder_id)
+			return (&heap->nodes[i]);
+		i++;
+	}
+	return (NULL);
+}
+
+/**
+ * @brief Insert `node` the first time this coder_id is seen on this
+ *        heap, otherwise update its priority/tiebreak/pending in place.
+ *        A dongle only ever has its 2 ring neighbors as coder_id, so
+ *        each is created once and reused for the rest of the run.
+ */
+void	heap_upsert(t_heap *heap, t_hnode node)
+{
+	t_hnode	*existing;
+
+	existing = heap_find(heap, node.coder_id);
+	if (existing)
+		*existing = node;
+	else
+		heap_push(heap, node);
+}
+
+void	heap_set_pending(t_heap *heap, int coder_id, bool pending)
+{
+	t_hnode	*node;
+
+	node = heap_find(heap, coder_id);
+	if (node)
+		node->pending = pending;
+}
+
+/**
+ * @brief True if `coder_id` has the best priority among the nodes
+ *        currently marked pending (actively waiting). A node that is
+ *        not pending (its owner is off compiling/debugging elsewhere)
+ *        never counts, so it can't block a neighbor who really is
+ *        waiting right now.
+ */
+bool	heap_pending_top_is(t_heap *heap, int coder_id)
+{
+	t_hnode	*best;
+	int		i;
+
+	best = NULL;
+	i = 0;
+	while (i < heap->size)
+	{
+		if (heap->nodes[i].pending
+			&& (!best || heap_cmp(&heap->nodes[i], best) < 0))
+			best = &heap->nodes[i];
+		i++;
+	}
+	return (best != NULL && best->coder_id == coder_id);
 }
